@@ -3,11 +3,12 @@
 import { useState } from 'react';
 import AppLayout from '@/components/AppLayout';
 import EventTable from '@/components/EventTable';
-import { powerEvents } from '@/data/events';
 import { PowerEvent } from '@/types';
 import DetailPanel from '@/components/DetailPanel';
+import { useDevices } from '@/context/DeviceContext';
 
 export default function EventsPage() {
+  const { powerEvents } = useDevices();
   const [selectedEvent, setSelectedEvent] = useState<PowerEvent | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');

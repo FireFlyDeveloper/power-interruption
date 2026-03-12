@@ -26,6 +26,5 @@ export interface Device {
   lat: number;
   lng: number;
   lastSeen: string;
-  batteryLevel?: number;
   signalStrength?: number;
 }

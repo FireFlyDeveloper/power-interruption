@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import AppLayout from '@/components/AppLayout';
-import { powerEvents } from '@/data/events';
 import { PowerEvent } from '@/types';
 import DetailPanel from '@/components/DetailPanel';
+import { useDevices } from '@/context/DeviceContext';
 
 const Map = dynamic(() => import('@/components/Map'), {
   ssr: false,
@@ -23,6 +23,7 @@ const markerColors = {
 };
 
 export default function MapPage() {
+  const { powerEvents } = useDevices();
   const [selectedEvent, setSelectedEvent] = useState<PowerEvent | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
