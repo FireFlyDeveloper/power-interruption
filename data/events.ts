@@ -28,19 +28,6 @@ export const powerEvents: PowerEvent[] = [
     affectedCustomers: 850
   },
   {
-    id: 'E-342',
-    status: 'Active',
-    severity: 'Critical',
-    location: 'Canda',
-    grid: 'D4',
-    start: '13:15',
-    duration: '1h 07m',
-    lat: 13.9200,
-    lng: 120.7500,
-    notes: 'Transformer T7 failure. Crew dispatched 13:50. Est. repair 30min. 1,240 customers affected.',
-    affectedCustomers: 1240
-  },
-  {
     id: 'E-278',
     status: 'Investigating',
     severity: 'Medium',

@@ -22,17 +22,6 @@ export default function Header() {
           <i className="far fa-clock text-gray-300 mr-2 text-base"></i>
           <span className="font-mono text-base text-white">{time}</span>
         </div>
-        
-        <div className="flex items-center gap-2 bg-[#1F3149] pr-4 pl-2 py-1.5 rounded-full border border-[#405F89]">
-          <div className="w-10 h-10 rounded-full bg-[#2F4870] flex items-center justify-center text-white text-base border border-gray-500 font-semibold">
-            MO
-          </div>
-          <span className="hidden sm:inline text-base text-white font-medium">Marcus O.</span>
-        </div>
-        
-        <div className="w-10 h-10 rounded-xl bg-[#1F3149] flex items-center justify-center border border-[#3F5B83] cursor-pointer hover:bg-[#2A3E5A] transition-colors">
-          <i className="fas fa-moon text-white text-lg"></i>
-        </div>
       </div>
     </header>
   );
