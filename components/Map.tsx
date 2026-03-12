@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { PowerEvent } from '@/types';
 
 // Define L type for refs
@@ -17,11 +17,26 @@ const markerColors = {
   Resolved: { border: '#059669', bg: '#d1fae5' }
 };
 
+// Generate a small random offset to prevent marker overlap
+const getMarkerOffset = (index: number) => {
+  const offsets = [
+    { x: 0, y: 0 },
+    { x: 0.0003, y: 0.0003 },
+    { x: -0.0003, y: 0.0003 },
+    { x: 0.0003, y: -0.0003 },
+    { x: -0.0003, y: -0.0003 },
+    { x: 0.0002, y: -0.0004 },
+    { x: -0.0002, y: 0.0004 },
+  ];
+  return offsets[index % offsets.length];
+};
+
 export default function Map({ events, onMarkerClick }: MapProps) {
   const mapRef = useRef<any>(null);
   const LRef = useRef<LeafletType | null>(null);
   const markersRef = useRef<any[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isMapReady, setIsMapReady] = useState(false);
 
   useEffect(() => {
     // Guard: Only run in browser
@@ -75,6 +90,7 @@ export default function Map({ events, onMarkerClick }: MapProps) {
         }).addTo(map);
 
         mapRef.current = map;
+        setIsMapReady(true);
 
       } catch (error) {
         console.error('Map initialization failed:', error);
@@ -92,12 +108,12 @@ export default function Map({ events, onMarkerClick }: MapProps) {
     };
   }, []);
 
-  // Update markers when events change
+  // Update markers when events change or map becomes ready
   useEffect(() => {
     const map = mapRef.current;
     const L = LRef.current;
 
-    if (!map || !L) return;
+    if (!map || !L || !isMapReady) return;
 
     // Clear existing markers
     markersRef.current.forEach(marker => {
@@ -107,9 +123,12 @@ export default function Map({ events, onMarkerClick }: MapProps) {
     });
     markersRef.current = [];
 
-    // Add new markers
-    events.forEach(event => {
+    // Add new markers with offset to prevent overlap
+    events.forEach((event, index) => {
       const colors = markerColors[event.status];
+      const offset = getMarkerOffset(index);
+      const lat = event.lat + offset.y;
+      const lng = event.lng + offset.x;
       
       const icon = L.divIcon({
         className: 'custom-div-icon',
@@ -130,7 +149,7 @@ export default function Map({ events, onMarkerClick }: MapProps) {
         popupAnchor: [0, -14]
       });
 
-      const marker = L.marker([event.lat, event.lng], { icon }).addTo(map);
+      const marker = L.marker([lat, lng], { icon }).addTo(map);
 
       const popupContent = `
         <div class="text-sm" style="min-width: 150px;">
@@ -146,7 +165,7 @@ export default function Map({ events, onMarkerClick }: MapProps) {
       
       markersRef.current.push(marker);
     });
-  }, [events, onMarkerClick]);
+  }, [events, onMarkerClick, isMapReady]);
 
   return (
     <div 
