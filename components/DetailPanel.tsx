@@ -57,16 +57,16 @@ export default function DetailPanel({ event, isOpen, onClose }: DetailPanelProps
     <>
       {/* Overlay */}
       <div
-        className={`fixed inset-0 bg-black/80 z-40 transition-opacity duration-300 ${
-          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        className={`fixed inset-0 bg-black/80 transition-opacity duration-300 ${
+          isOpen ? 'opacity-100 z-[60]' : 'opacity-0 pointer-events-none'
         }`}
         onClick={onClose}
       ></div>
 
       {/* Panel */}
       <div
-        className={`fixed top-0 right-0 w-full sm:w-96 h-full bg-[#142336] border-l border-[#375F8F] shadow-2xl z-50 flex flex-col transition-transform duration-300 ease-out ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
+        className={`fixed top-0 right-0 w-full sm:w-96 h-full bg-[#142336] border-l border-[#375F8F] shadow-2xl flex flex-col transition-transform duration-300 ease-out ${
+          isOpen ? 'translate-x-0 z-[70]' : 'translate-x-full'
         }`}
       >
         <div className="flex items-center justify-between p-6 border-b border-[#375A84] bg-[#0F2037]">

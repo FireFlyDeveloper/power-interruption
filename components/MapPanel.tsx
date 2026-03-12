@@ -29,7 +29,7 @@ export default function MapPanel({ events, onMarkerClick }: MapPanelProps) {
   }, [onMarkerClick]);
   
   return (
-    <div className="lg:w-100 xl:w-110 bg-[#141C28] border border-[#273953] rounded-2xl overflow-hidden flex flex-col h-125 lg:h-auto">
+    <div className="lg:w-100 xl:w-110 bg-[#141C28] border border-[#273953] rounded-2xl overflow-hidden flex flex-col h-125 lg:h-auto relative z-0">
       <div className="p-4 border-b border-[#2F4565] flex items-center justify-between bg-[#101E30]">
         <span className="text-lg font-medium text-gray-100">
           <i className="fas fa-map mr-2 text-gray-400"></i>
@@ -40,7 +40,9 @@ export default function MapPanel({ events, onMarkerClick }: MapPanelProps) {
         </span>
       </div>
       
-      <Map events={memoizedEvents} onMarkerClick={handleMarkerClick} />
+      <div className="relative z-0">
+        <Map events={memoizedEvents} onMarkerClick={handleMarkerClick} />
+      </div>
       
       <div className="p-3 border-t border-[#2F4565] flex gap-4 text-sm bg-[#0F1D2F]">
         <span><i className="fas fa-circle text-[#dc2626] mr-1"></i> active</span>
