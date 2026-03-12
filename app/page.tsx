@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import AppLayout from '@/components/AppLayout';
 import StatCards from '@/components/StatCards';
 import EventTable from '@/components/EventTable';
@@ -13,15 +13,15 @@ export default function DashboardPage() {
   const [selectedEvent, setSelectedEvent] = useState<PowerEvent | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
 
-  const handleEventClick = (event: PowerEvent) => {
+  const handleEventClick = useCallback((event: PowerEvent) => {
     setSelectedEvent(event);
     setIsPanelOpen(true);
-  };
+  }, []);
 
-  const handleClosePanel = () => {
+  const handleClosePanel = useCallback(() => {
     setIsPanelOpen(false);
     setTimeout(() => setSelectedEvent(null), 300);
-  };
+  }, []);
 
   return (
     <AppLayout>

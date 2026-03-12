@@ -1,5 +1,6 @@
 'use client';
 
+import { useCallback, useMemo } from 'react';
 import { PowerEvent } from '@/types';
 
 interface EventTableProps {
@@ -34,6 +35,14 @@ const getSeverityClass = (severity: string) => {
 };
 
 export default function EventTable({ events, onEventClick }: EventTableProps) {
+  // Memoize events to prevent unnecessary re-renders
+  const memoizedEvents = useMemo(() => events, [events]);
+  
+  // Memoize the callback to prevent re-renders
+  const handleEventClick = useCallback((event: PowerEvent) => {
+    onEventClick(event);
+  }, [onEventClick]);
+  
   return (
     <div className="flex-1 bg-[#141C28] border border-[#273953] rounded-2xl overflow-hidden flex flex-col min-h-100">
       {/* Toolbar */}
@@ -75,10 +84,10 @@ export default function EventTable({ events, onEventClick }: EventTableProps) {
             </tr>
           </thead>
           <tbody className="divide-y divide-[#2D4567]">
-            {events.map((event) => (
+            {memoizedEvents.map((event) => (
               <tr
                 key={event.id}
-                onClick={() => onEventClick(event)}
+                onClick={() => handleEventClick(event)}
                 className="hover:bg-[#1F3450] cursor-pointer transition-colors text-base"
               >
                 <td className="px-4 py-4 font-mono text-[#B6D0F5] font-medium">{event.id}</td>
