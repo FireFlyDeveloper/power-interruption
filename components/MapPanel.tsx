@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useMemo, useCallback } from 'react';
+import { useCallback } from 'react';
 import { PowerEvent } from '@/types';
 
 interface MapPanelProps {
@@ -20,10 +20,7 @@ const Map = dynamic(() => import('./Map'), {
 });
 
 export default function MapPanel({ events, onMarkerClick }: MapPanelProps) {
-  // Memoize events to prevent unnecessary re-renders
-  const memoizedEvents = useMemo(() => events, [events]);
-  
-  // Memoize the callback to prevent re-renders
+  // Memoize the callback to prevent re-renders but don't memoize events
   const handleMarkerClick = useCallback((event: PowerEvent) => {
     onMarkerClick(event);
   }, [onMarkerClick]);
@@ -41,7 +38,7 @@ export default function MapPanel({ events, onMarkerClick }: MapPanelProps) {
       </div>
       
       <div className="relative z-0">
-        <Map events={memoizedEvents} onMarkerClick={handleMarkerClick} />
+        <Map events={events} onMarkerClick={handleMarkerClick} />
       </div>
       
       <div className="p-3 border-t border-[#2F4565] flex gap-4 text-sm bg-[#0F1D2F]">
