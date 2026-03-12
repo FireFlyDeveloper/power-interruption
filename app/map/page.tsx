@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
-import AppLayout from '@/components/AppLayout';
+import Header from '@/components/Header';
+import Sidebar from '@/components/Sidebar';
+import MobileNav from '@/components/MobileNav';
 import { PowerEvent } from '@/types';
 import DetailPanel from '@/components/DetailPanel';
 import { useDevices } from '@/context/DeviceContext';
@@ -43,78 +45,88 @@ export default function MapPage() {
     : powerEvents.filter(event => event.status.toLowerCase() === statusFilter);
 
   return (
-    <AppLayout>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white">Incident Map</h1>
-        <p className="text-gray-400 mt-1">View all power interruption incidents on the map</p>
+    <div className="flex flex-col h-screen overflow-hidden bg-[#0C1119] text-gray-200 antialiased text-base">
+      <Header />
+      
+      <div className="flex flex-1 overflow-hidden relative">
+        <Sidebar pathname="/map" />
+        
+        <main className="flex-1 overflow-y-auto thin-scroll bg-[#0C1119] px-4 sm:px-6 pb-28 md:pb-6 relative">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-white">Incident Map</h1>
+            <p className="text-gray-400 mt-1">View all power interruption incidents on the map</p>
+          </div>
+
+          <div className="flex gap-3 mb-4">
+            <button
+              onClick={() => setStatusFilter('all')}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                statusFilter === 'all' 
+                  ? 'bg-[#1F314F] text-white border border-[#3E5D88]' 
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setStatusFilter('active')}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                statusFilter === 'active' 
+                  ? 'bg-[#4A2E2E] text-[#FCC5C5] border border-[#B45F5F]' 
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              Active
+            </button>
+            <button
+              onClick={() => setStatusFilter('investigating')}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                statusFilter === 'investigating' 
+                  ? 'bg-[#4A4024] text-[#FCE6B4] border border-[#C6993A]' 
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              Investigating
+            </button>
+            <button
+              onClick={() => setStatusFilter('resolved')}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                statusFilter === 'resolved' 
+                  ? 'bg-[#1F4733] text-[#BCF0D5] border border-[#479A6E]' 
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              Resolved
+            </button>
+          </div>
+
+          <div className="bg-[#141C28] border border-[#273953] rounded-2xl overflow-hidden h-[600px] relative z-0">
+            <Map 
+              events={filteredEvents} 
+              onMarkerClick={handleEventClick} 
+            />
+          </div>
+
+          <div className="mt-4 flex gap-4 text-sm">
+            {Object.entries(markerColors).map(([status, colors]) => (
+              <span key={status} className="flex items-center">
+                <i className={`fas fa-circle mr-2`} style={{ color: colors.border }}></i>
+                {status}
+              </span>
+            ))}
+          </div>
+
+          <div className="h-24 md:h-6"></div>
+        </main>
       </div>
 
-      <div className="flex gap-3 mb-4">
-        <button
-          onClick={() => setStatusFilter('all')}
-          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-            statusFilter === 'all' 
-              ? 'bg-[#1F314F] text-white border border-[#3E5D88]' 
-              : 'text-gray-400 hover:text-white'
-          }`}
-        >
-          All
-        </button>
-        <button
-          onClick={() => setStatusFilter('active')}
-          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-            statusFilter === 'active' 
-              ? 'bg-[#4A2E2E] text-[#FCC5C5] border border-[#B45F5F]' 
-              : 'text-gray-400 hover:text-white'
-          }`}
-        >
-          Active
-        </button>
-        <button
-          onClick={() => setStatusFilter('investigating')}
-          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-            statusFilter === 'investigating' 
-              ? 'bg-[#4A4024] text-[#FCE6B4] border border-[#C6993A]' 
-              : 'text-gray-400 hover:text-white'
-          }`}
-        >
-          Investigating
-        </button>
-        <button
-          onClick={() => setStatusFilter('resolved')}
-          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-            statusFilter === 'resolved' 
-              ? 'bg-[#1F4733] text-[#BCF0D5] border border-[#479A6E]' 
-              : 'text-gray-400 hover:text-white'
-          }`}
-        >
-          Resolved
-        </button>
-      </div>
-
-      <div className="bg-[#141C28] border border-[#273953] rounded-2xl overflow-hidden h-[600px]">
-        <Map 
-          events={filteredEvents} 
-          onMarkerClick={handleEventClick} 
-        />
-      </div>
-
-      <div className="mt-4 flex gap-4 text-sm">
-        {Object.entries(markerColors).map(([status, colors]) => (
-          <span key={status} className="flex items-center">
-            <i className={`fas fa-circle mr-2`} style={{ color: colors.border }}></i>
-            {status}
-          </span>
-        ))}
-      </div>
-
-      <div className="h-24 md:h-6"></div>
+      <MobileNav />
       
       <DetailPanel 
         event={selectedEvent} 
         isOpen={isPanelOpen} 
         onClose={handleClosePanel} 
       />
-    </AppLayout>
+    </div>
   );
 }

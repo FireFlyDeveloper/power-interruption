@@ -61,7 +61,20 @@ const initialDevices: Device[] = [
 ];
 
 // Sample initial power events
-const initialPowerEvents: PowerEvent[] = [];
+const initialPowerEvents: PowerEvent[] = [
+  {
+    id: 'EVT-001-1700000000000',
+    status: 'Active',
+    severity: 'Critical',
+    location: 'Balayan North',
+    grid: 'Balayan North',
+    start: new Date().toISOString(),
+    duration: '15 min',
+    lat: 13.9432,
+    lng: 120.7389,
+    affectedCustomers: 245,
+  },
+];
 
 export function DeviceProvider({ children }: { children: ReactNode }) {
   const [devices, setDevices] = useState<Device[]>(initialDevices);

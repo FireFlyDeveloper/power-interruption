@@ -1,6 +1,8 @@
 'use client';
 
-import AppLayout from '@/components/AppLayout';
+import Header from '@/components/Header';
+import Sidebar from '@/components/Sidebar';
+import MobileNav from '@/components/MobileNav';
 
 const reportData = [
   { id: 'R-001', title: 'Daily Power Interruption Summary', date: '2024-03-12', type: 'Daily' },
@@ -12,11 +14,17 @@ const reportData = [
 
 export default function ReportsPage() {
   return (
-    <AppLayout>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white">Reports</h1>
-        <p className="text-gray-400 mt-1">View and download power interruption reports</p>
-      </div>
+    <div className="flex flex-col h-screen overflow-hidden bg-[#0C1119] text-gray-200 antialiased text-base">
+      <Header />
+      
+      <div className="flex flex-1 overflow-hidden relative">
+        <Sidebar pathname="/reports" />
+        
+        <main className="flex-1 overflow-y-auto thin-scroll bg-[#0C1119] px-4 sm:px-6 pb-28 md:pb-6 relative">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-white">Reports</h1>
+            <p className="text-gray-400 mt-1">View and download power interruption reports</p>
+          </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {reportData.map((report) => (
@@ -75,6 +83,10 @@ export default function ReportsPage() {
       </div>
 
       <div className="h-24 md:h-6"></div>
-    </AppLayout>
+    </main>
+  </div>
+
+  <MobileNav />
+</div>
   );
 }

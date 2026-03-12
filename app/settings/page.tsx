@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import AppLayout from '@/components/AppLayout';
+import Header from '@/components/Header';
+import Sidebar from '@/components/Sidebar';
+import MobileNav from '@/components/MobileNav';
 
 export default function SettingsPage() {
   const [notifications, setNotifications] = useState(true);
@@ -11,13 +13,19 @@ export default function SettingsPage() {
   const [refreshInterval, setRefreshInterval] = useState('30');
 
   return (
-    <AppLayout>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white">Settings</h1>
-        <p className="text-gray-400 mt-1">Configure your dashboard preferences</p>
-      </div>
+    <div className="flex flex-col h-screen overflow-hidden bg-[#0C1119] text-gray-200 antialiased text-base">
+      <Header />
+      
+      <div className="flex flex-1 overflow-hidden relative">
+        <Sidebar pathname="/settings" />
+        
+        <main className="flex-1 overflow-y-auto thin-scroll bg-[#0C1119] px-4 sm:px-6 pb-28 md:pb-6 relative">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-white">Settings</h1>
+            <p className="text-gray-400 mt-1">Configure your dashboard preferences</p>
+          </div>
 
-      <div className="space-y-6">
+          <div className="space-y-6">
         {/* Notification Settings */}
         <div className="bg-[#141C28] border border-[#273953] rounded-2xl p-6">
           <h2 className="text-lg font-semibold text-white mb-4">Notifications</h2>
@@ -165,6 +173,10 @@ export default function SettingsPage() {
       </div>
 
       <div className="h-24 md:h-6"></div>
-    </AppLayout>
+    </main>
+  </div>
+
+  <MobileNav />
+</div>
   );
 }
