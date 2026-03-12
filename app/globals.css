@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --font-inter: 'Inter', sans-serif;
+  --font-poppins: 'Poppins', sans-serif;
 }
 
 body {
-  font-family: var(--font-inter);
+  font-family: var(--font-poppins);
 }
 
 /* Custom scrollbar */
@@ -29,7 +29,7 @@ body {
   color: #e2e8f0 !important;
   border: 1px solid #375F8F !important;
   border-radius: 8px !important;
-  font-family: var(--font-inter) !important;
+  font-family: var(--font-poppins) !important;
 }
 
 .leaflet-popup-tip {

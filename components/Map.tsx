@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import { PowerEvent } from '@/types';
 
-// Define L type for refs
 type LeafletType = typeof import('leaflet');
 
 interface MapProps {
@@ -11,23 +10,24 @@ interface MapProps {
   onMarkerClick: (event: PowerEvent) => void;
 }
 
-const markerColors = {
+const markerColors: Record<string, { border: string; bg: string }> = {
   Active: { border: '#dc2626', bg: '#fee2e2' },
   Investigating: { border: '#d97706', bg: '#fef3c7' },
   Resolved: { border: '#059669', bg: '#d1fae5' }
 };
 
-// Generate a small random offset to prevent marker overlap
-const getMarkerOffset = (index: number) => {
-  const offsets = [
-    { x: 0, y: 0 },
-    { x: 0.0003, y: 0.0003 },
-    { x: -0.0003, y: 0.0003 },
-    { x: 0.0003, y: -0.0003 },
-    { x: -0.0003, y: -0.0003 },
-    { x: 0.0002, y: -0.0004 },
-    { x: -0.0002, y: 0.0004 },
+// Cluster nearby events to prevent overlap
+const getClusteredOffset = (index: number, total: number): [number, number] => {
+  if (total <= 1) return [0, 0];
+  
+  const offsets: [number, number][] = [
+    [0, 0],
+    [0.0004, 0.0004],
+    [-0.0004, 0.0004],
+    [0.0004, -0.0004],
+    [-0.0004, -0.0004],
   ];
+  
   return offsets[index % offsets.length];
 };
 
@@ -36,11 +36,16 @@ export default function Map({ events, onMarkerClick }: MapProps) {
   const LRef = useRef<LeafletType | null>(null);
   const markersRef = useRef<any[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isMapReady, setIsMapReady] = useState(false);
-  const markersInitialized = useRef(false);
+  const initializedRef = useRef(false);
 
+  // Memoize events to prevent unnecessary re-renders
+  const eventsKey = useMemo(() => 
+    events.map(e => `${e.id}-${e.status}`).join(','), 
+    [events]
+  );
+
+  // Initialize map once
   useEffect(() => {
-    // Guard: Only run in browser
     if (typeof window === 'undefined' || !containerRef.current || mapRef.current) {
       return;
     }
@@ -49,10 +54,8 @@ export default function Map({ events, onMarkerClick }: MapProps) {
 
     const initMap = async () => {
       try {
-        // Dynamically import both Leaflet and its CSS
         const [leafletModule] = await Promise.all([
           import('leaflet'),
-          // Dynamically inject CSS
           new Promise<void>((resolve) => {
             if (document.getElementById('leaflet-css')) {
               resolve();
@@ -74,16 +77,10 @@ export default function Map({ events, onMarkerClick }: MapProps) {
         const L = leafletModule.default || leafletModule;
         LRef.current = L;
 
-        // Initialize map
         const map = L.map(containerRef.current, {
-          zoomControl: false
+          zoomControl: true
         }).setView([13.9394, 120.7336], 13);
 
-        L.control.zoom({
-          position: 'topright'
-        }).addTo(map);
-
-        // Light map style - CartoDB Voyager
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
           attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
           subdomains: 'abcd',
@@ -91,8 +88,7 @@ export default function Map({ events, onMarkerClick }: MapProps) {
         }).addTo(map);
 
         mapRef.current = map;
-        setIsMapReady(true);
-
+        initializedRef.current = true;
       } catch (error) {
         console.error('Map initialization failed:', error);
       }
@@ -103,70 +99,93 @@ export default function Map({ events, onMarkerClick }: MapProps) {
     return () => {
       isMounted = false;
       if (mapRef.current) {
-        mapRef.current.remove();
+        try {
+          mapRef.current.remove();
+        } catch (e) {
+          // Map may already be removed
+        }
         mapRef.current = null;
       }
+      initializedRef.current = false;
     };
   }, []);
 
-  // Update markers when map becomes ready - only do this once
+  // Create/update markers when events or map changes
   useEffect(() => {
+    if (!initializedRef.current) return;
+    
     const map = mapRef.current;
     const L = LRef.current;
+    
+    if (!map || !L) return;
 
-    if (!map || !L || !isMapReady || markersInitialized.current) return;
+    // Clear existing markers
+    markersRef.current.forEach(marker => {
+      try {
+        if (map.hasLayer(marker)) {
+          marker.remove();
+        }
+      } catch (e) {
+        // Marker may already be removed
+      }
+    });
+    markersRef.current = [];
 
-    markersInitialized.current = true;
-
-    // Add markers
+    // Create new markers with clustering
     events.forEach((event, index) => {
-      const colors = markerColors[event.status];
-      const offset = getMarkerOffset(index);
-      const lat = event.lat + offset.y;
-      const lng = event.lng + offset.x;
+      const colors = markerColors[event.status] || markerColors.Active;
+      const [offsetX, offsetY] = getClusteredOffset(index, events.length);
       
+      const lat = event.lat + offsetY;
+      const lng = event.lng + offsetX;
+
       const icon = L.divIcon({
         className: 'custom-div-icon',
         html: `
           <div style="
             background-color: ${colors.bg}; 
             border: 3px solid ${colors.border}; 
-            width: 28px; height: 28px; 
+            width: 32px; height: 32px; 
             border-radius: 50%; 
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
             display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
           ">
-            <div style="width: 10px; height: 10px; background: ${colors.border}; border-radius: 50%;"></div>
+            <div style="width: 12px; height: 12px; background: ${colors.border}; border-radius: 50%;"></div>
           </div>
         `,
-        iconSize: [28, 28],
-        iconAnchor: [14, 14],
-        popupAnchor: [0, -14]
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
+        popupAnchor: [0, -16]
       });
 
       const marker = L.marker([lat, lng], { icon }).addTo(map);
 
       const popupContent = `
-        <div class="text-sm" style="min-width: 150px;">
-          <div style="font-weight: 700; font-size: 1rem; margin-bottom: 4px; color: #1f2937;">${event.id} - ${event.location}</div>
-          <div style="color: #6b7280; margin-bottom: 4px; font-size: 0.875rem;">${event.status} | ${event.severity}</div>
+        <div style="min-width: 180px; font-family: var(--font-poppins, sans-serif);">
+          <div style="font-weight: 700; font-size: 1rem; margin-bottom: 6px; color: #1f2937;">${event.id} - ${event.location}</div>
+          <div style="color: #6b7280; margin-bottom: 4px; font-size: 0.875rem;">
+            <span style="color: ${colors.border}; font-weight: 600;">${event.status}</span> | ${event.severity}
+          </div>
           <div style="color: #9ca3af; font-size: 0.75rem;">Grid: ${event.grid}</div>
           <div style="color: #9ca3af; font-size: 0.75rem;">Duration: ${event.duration}</div>
         </div>
       `;
 
       marker.bindPopup(popupContent);
-      marker.on('click', () => onMarkerClick(event));
+      
+      marker.on('click', () => {
+        onMarkerClick(event);
+      });
       
       markersRef.current.push(marker);
     });
-  }, [isMapReady, events, onMarkerClick]);
+  }, [eventsKey, onMarkerClick, events]);
 
   return (
     <div 
       ref={containerRef} 
-      className="flex-1 w-full h-full relative bg-[#f5f5f5]"
-      style={{ minHeight: '300px' }}
+      className="w-full h-full min-h-[500px]"
     />
   );
 }
