@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useMemo } from 'react';
+import { useEffect, useRef } from 'react';
 import { PowerEvent } from '@/types';
 
 type LeafletType = typeof import('leaflet');
@@ -37,12 +37,6 @@ export default function Map({ events, onMarkerClick }: MapProps) {
   const markersRef = useRef<any[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const initializedRef = useRef(false);
-
-  // Memoize events to prevent unnecessary re-renders
-  const eventsKey = useMemo(() => 
-    events.map(e => `${e.id}-${e.status}`).join(','), 
-    [events]
-  );
 
   // Initialize map once
   useEffect(() => {
@@ -110,7 +104,7 @@ export default function Map({ events, onMarkerClick }: MapProps) {
     };
   }, []);
 
-  // Create/update markers when events or map changes
+  // Create/update markers when events change
   useEffect(() => {
     if (!initializedRef.current) return;
     
@@ -180,7 +174,7 @@ export default function Map({ events, onMarkerClick }: MapProps) {
       
       markersRef.current.push(marker);
     });
-  }, [eventsKey, onMarkerClick, events]);
+  }, [events, onMarkerClick]);
 
   return (
     <div 
