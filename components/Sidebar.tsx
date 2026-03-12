@@ -9,6 +9,7 @@ interface SidebarProps {
 
 const navItems = [
   { icon: 'fa-chart-pie', label: 'Dashboard', href: '/' },
+  { icon: 'fa-satellite-dish', label: 'Devices', href: '/devices' },
   { icon: 'fa-list', label: 'Events', href: '/events' },
   { icon: 'fa-map', label: 'Map', href: '/map' },
   { icon: 'fa-file-alt', label: 'Reports', href: '/reports' },

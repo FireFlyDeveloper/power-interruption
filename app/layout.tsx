@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Poppins } from 'next/font/google';
 import './globals.css';
+import { DeviceProvider } from '@/context/DeviceContext';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -27,7 +28,11 @@ export default function RootLayout({
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
         />
       </head>
-      <body className={`${poppins.className} bg-[#0C1119]`}>{children}</body>
+      <body className={`${poppins.className} bg-[#0C1119]`}>
+        <DeviceProvider>
+          {children}
+        </DeviceProvider>
+      </body>
     </html>
   );
 }

@@ -17,3 +17,15 @@ export interface EventTimeline {
   action: string;
   status: 'completed' | 'pending' | 'current';
 }
+
+export interface Device {
+  id: string;
+  name: string;
+  status: 'online' | 'offline';
+  grid: string;
+  lat: number;
+  lng: number;
+  lastSeen: string;
+  batteryLevel?: number;
+  signalStrength?: number;
+}
