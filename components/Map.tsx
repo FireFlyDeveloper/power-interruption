@@ -37,6 +37,7 @@ export default function Map({ events, onMarkerClick }: MapProps) {
   const markersRef = useRef<any[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isMapReady, setIsMapReady] = useState(false);
+  const markersInitialized = useRef(false);
 
   useEffect(() => {
     // Guard: Only run in browser
@@ -108,22 +109,16 @@ export default function Map({ events, onMarkerClick }: MapProps) {
     };
   }, []);
 
-  // Update markers when events change or map becomes ready
+  // Update markers when map becomes ready - only do this once
   useEffect(() => {
     const map = mapRef.current;
     const L = LRef.current;
 
-    if (!map || !L || !isMapReady) return;
+    if (!map || !L || !isMapReady || markersInitialized.current) return;
 
-    // Clear existing markers
-    markersRef.current.forEach(marker => {
-      if (map.hasLayer(marker)) {
-        marker.remove();
-      }
-    });
-    markersRef.current = [];
+    markersInitialized.current = true;
 
-    // Add new markers with offset to prevent overlap
+    // Add markers
     events.forEach((event, index) => {
       const colors = markerColors[event.status];
       const offset = getMarkerOffset(index);
@@ -165,7 +160,7 @@ export default function Map({ events, onMarkerClick }: MapProps) {
       
       markersRef.current.push(marker);
     });
-  }, [events, onMarkerClick, isMapReady]);
+  }, [isMapReady, events, onMarkerClick]);
 
   return (
     <div 
