@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 
 const navItems = [
   { icon: 'fa-chart-pie', href: '/' },
+  { icon: 'fa-satellite-dish', href: '/devices' },
   { icon: 'fa-list', href: '/events' },
   { icon: 'fa-map', href: '/map' },
   { icon: 'fa-file-alt', href: '/reports' },
