@@ -6,7 +6,7 @@ import { useDevices } from '@/context/DeviceContext';
 import { Device } from '@/types';
 
 export default function DevicesPage() {
-  const { devices, addDevice, removeDevice } = useDevices();
+  const { devices, addDevice, removeDevice, reportPowerOutage } = useDevices();
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
@@ -29,7 +29,6 @@ export default function DevicesPage() {
             status: deviceStatus,
             lat: position.coords.latitude,
             lng: position.coords.longitude,
-            batteryLevel: 100,
             signalStrength: 5,
           });
           setDeviceName('');
@@ -46,7 +45,6 @@ export default function DevicesPage() {
             status: deviceStatus,
             lat: 13.9394,
             lng: 120.7336,
-            batteryLevel: 100,
             signalStrength: 5,
           });
           setDeviceName('');
@@ -63,7 +61,6 @@ export default function DevicesPage() {
         status: deviceStatus,
         lat: 13.9394,
         lng: 120.7336,
-        batteryLevel: 100,
         signalStrength: 5,
       });
       setDeviceName('');
@@ -130,8 +127,7 @@ export default function DevicesPage() {
         {devices.map((device) => (
           <div 
             key={device.id}
-            onClick={() => setSelectedDevice(device)}
-            className="bg-[#141C28] border border-[#273953] rounded-xl p-5 hover:border-[#3E5D88] transition-colors cursor-pointer"
+            className="bg-[#141C28] border border-[#273953] rounded-xl p-5 hover:border-[#3E5D88] transition-colors"
           >
             <div className="flex items-start justify-between mb-3">
               <div className="w-12 h-12 rounded-xl bg-[#1E314A] flex items-center justify-center border border-[#46648B]">
@@ -147,23 +143,32 @@ export default function DevicesPage() {
             </div>
             <h3 className="text-lg font-semibold text-white mb-1">{device.name}</h3>
             <p className="text-sm text-gray-400 mb-3">{device.grid}</p>
-            <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center justify-between text-sm mb-3">
               <span className="text-gray-500">{device.id}</span>
               <span className="text-gray-500">{formatLastSeen(device.lastSeen)}</span>
             </div>
-            <div className="flex items-center gap-4 mt-3">
-              <div className="flex items-center gap-2">
-                <i className="fas fa-battery-half text-gray-400"></i>
-                <span className={`text-sm ${device.batteryLevel && device.batteryLevel < 20 ? 'text-red-400' : 'text-gray-400'}`}>
-                  {device.batteryLevel}%
-                </span>
-              </div>
+            <div className="flex items-center gap-4 mb-4">
               <div className="flex items-center gap-2">
                 <i className="fas fa-signal text-gray-400"></i>
                 <span className="text-sm text-gray-400">
                   {device.signalStrength}/5
                 </span>
               </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setSelectedDevice(device)}
+                className="flex-1 px-3 py-2 bg-[#1F314F] text-gray-200 rounded-lg text-sm font-medium hover:bg-[#2A3E5A] transition-colors"
+              >
+                View Details
+              </button>
+              <button
+                onClick={() => reportPowerOutage(device.id, 'Critical')}
+                className="px-3 py-2 bg-[#4A2E2E] text-[#FCC5C5] rounded-lg text-sm font-medium hover:bg-[#5A3E3E] transition-colors border border-[#B45F5F]"
+                title="Simulate power outage detection"
+              >
+                <i className="fas fa-bolt-slash"></i>
+              </button>
             </div>
           </div>
         ))}
@@ -289,13 +294,6 @@ export default function DevicesPage() {
               <div className="flex justify-between items-center py-2 border-b border-[#273953]">
                 <span className="text-gray-400">Grid</span>
                 <span className="text-white">{selectedDevice.grid}</span>
-              </div>
-
-              <div className="flex justify-between items-center py-2 border-b border-[#273953]">
-                <span className="text-gray-400">Battery</span>
-                <span className={selectedDevice.batteryLevel && selectedDevice.batteryLevel < 20 ? 'text-red-400' : 'text-white'}>
-                  {selectedDevice.batteryLevel}%
-                </span>
               </div>
 
               <div className="flex justify-between items-center py-2 border-b border-[#273953]">

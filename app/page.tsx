@@ -7,11 +7,12 @@ import MobileNav from '@/components/MobileNav';
 import StatCards from '@/components/StatCards';
 import EventTable from '@/components/EventTable';
 import MapPanel from '@/components/MapPanel';
-import { powerEvents } from '@/data/events';
 import { PowerEvent } from '@/types';
 import DetailPanel from '@/components/DetailPanel';
+import { useDevices } from '@/context/DeviceContext';
 
 export default function DashboardPage() {
+  const { powerEvents } = useDevices();
   const [selectedEvent, setSelectedEvent] = useState<PowerEvent | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
 

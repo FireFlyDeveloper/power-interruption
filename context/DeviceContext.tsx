@@ -1,14 +1,17 @@
 'use client';
 
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { Device } from '@/types';
+import { Device, PowerEvent } from '@/types';
 
 interface DeviceContextType {
   devices: Device[];
+  powerEvents: PowerEvent[];
   addDevice: (device: Omit<Device, 'id' | 'lastSeen'>) => void;
   removeDevice: (id: string) => void;
   updateDevice: (id: string, updates: Partial<Device>) => void;
   getDevice: (id: string) => Device | undefined;
+  reportPowerOutage: (deviceId: string, severity: 'Critical' | 'Medium' | 'Low') => void;
+  resolvePowerOutage: (eventId: string) => void;
 }
 
 const DeviceContext = createContext<DeviceContextType | undefined>(undefined);
@@ -23,7 +26,6 @@ const initialDevices: Device[] = [
     lat: 13.9432,
     lng: 120.7389,
     lastSeen: new Date().toISOString(),
-    batteryLevel: 85,
     signalStrength: 4,
   },
   {
@@ -34,7 +36,6 @@ const initialDevices: Device[] = [
     lat: 13.9375,
     lng: 120.7256,
     lastSeen: new Date().toISOString(),
-    batteryLevel: 72,
     signalStrength: 3,
   },
   {
@@ -45,7 +46,6 @@ const initialDevices: Device[] = [
     lat: 13.9289,
     lng: 120.7412,
     lastSeen: new Date(Date.now() - 3600000).toISOString(),
-    batteryLevel: 15,
     signalStrength: 0,
   },
   {
@@ -56,13 +56,16 @@ const initialDevices: Device[] = [
     lat: 13.9456,
     lng: 120.7501,
     lastSeen: new Date().toISOString(),
-    batteryLevel: 91,
     signalStrength: 5,
   },
 ];
 
+// Sample initial power events
+const initialPowerEvents: PowerEvent[] = [];
+
 export function DeviceProvider({ children }: { children: ReactNode }) {
   const [devices, setDevices] = useState<Device[]>(initialDevices);
+  const [powerEvents, setPowerEvents] = useState<PowerEvent[]>(initialPowerEvents);
 
   const addDevice = useCallback((deviceData: Omit<Device, 'id' | 'lastSeen'>) => {
     const newDevice: Device = {
@@ -87,8 +90,53 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
     return devices.find(d => d.id === id);
   }, [devices]);
 
+  // Device reports power outage - creates a power event
+  const reportPowerOutage = useCallback((deviceId: string, severity: 'Critical' | 'Medium' | 'Low') => {
+    const device = devices.find(d => d.id === deviceId);
+    if (!device) return;
+
+    // Check if there's already an active event for this device
+    const existingEvent = powerEvents.find(
+      e => e.id.startsWith(deviceId) && e.status === 'Active'
+    );
+    
+    if (existingEvent) return; // Already reported
+
+    const newEvent: PowerEvent = {
+      id: `EVT-${deviceId.replace('DEV-', '')}-${Date.now()}`,
+      status: 'Active',
+      severity,
+      location: device.grid,
+      grid: device.grid,
+      start: new Date().toISOString(),
+      duration: '0 min',
+      lat: device.lat,
+      lng: device.lng,
+    };
+
+    setPowerEvents(prev => [...prev, newEvent]);
+  }, [devices, powerEvents]);
+
+  // Resolve a power outage event
+  const resolvePowerOutage = useCallback((eventId: string) => {
+    setPowerEvents(prev => prev.map(e => 
+      e.id === eventId 
+        ? { ...e, status: 'Resolved' as const, duration: 'Resolved' }
+        : e
+    ));
+  }, []);
+
   return (
-    <DeviceContext.Provider value={{ devices, addDevice, removeDevice, updateDevice, getDevice }}>
+    <DeviceContext.Provider value={{ 
+      devices, 
+      powerEvents,
+      addDevice, 
+      removeDevice, 
+      updateDevice, 
+      getDevice,
+      reportPowerOutage,
+      resolvePowerOutage,
+    }}>
       {children}
     </DeviceContext.Provider>
   );
