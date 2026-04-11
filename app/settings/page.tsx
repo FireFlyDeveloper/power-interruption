@@ -28,7 +28,7 @@ const defaultSettings: Settings = {
 };
 
 export default function SettingsPage() {
-  const { user, changePassword, isAdmin, createUser, users, updateUser, deleteUser, resetUserPassword } = useAuth();
+  const { user, changePassword, isAdmin, createUser, users, updateUser, deleteUser, resetUserPassword, updateProfile } = useAuth();
   const [settings, setSettings] = useState<Settings>(defaultSettings);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
@@ -53,6 +53,11 @@ export default function SettingsPage() {
   const [resetPasswordUser, setResetPasswordUser] = useState<{ id: string; displayName: string } | null>(null);
   const [newResetPassword, setNewResetPassword] = useState('');
   const [resetPasswordSuccess, setResetPasswordSuccess] = useState(false);
+  
+  // Profile edit state
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileDisplayName, setProfileDisplayName] = useState('');
+  const [profileEmail, setProfileEmail] = useState('');
 
   // Load settings from localStorage on mount
   useEffect(() => {
@@ -105,6 +110,16 @@ export default function SettingsPage() {
       }, 2000);
     } else {
       setPasswordError('Current password is incorrect');
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    const success = await updateProfile({
+      displayName: profileDisplayName,
+      email: profileEmail,
+    });
+    if (success) {
+      setIsEditingProfile(false);
     }
   };
 
@@ -255,19 +270,85 @@ export default function SettingsPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm text-gray-400 mb-2">Display Name</label>
-                  <input 
-                    type="text" 
-                    defaultValue={user?.displayName || 'User'}
-                    className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white"
-                  />
+                  {isEditingProfile ? (
+                    <div className="flex gap-2">
+                      <input 
+                        type="text" 
+                        value={profileDisplayName}
+                        onChange={(e) => setProfileDisplayName(e.target.value)}
+                        className="flex-1 bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white"
+                      />
+                      <button 
+                        onClick={handleSaveProfile}
+                        className="px-3 py-2 bg-[#1E5F4A] text-white rounded-lg hover:bg-[#2A7A5F] transition-colors"
+                      >
+                        <i className="fas fa-check"></i>
+                      </button>
+                      <button 
+                        onClick={() => {
+                          setIsEditingProfile(false);
+                          setProfileDisplayName(user?.displayName || '');
+                        }}
+                        className="px-3 py-2 bg-[#3D4F5F] text-white rounded-lg hover:bg-[#4D5F6F] transition-colors"
+                      >
+                        <i className="fas fa-times"></i>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span className="flex-1 text-white py-2">{user?.displayName || 'User'}</span>
+                      <button 
+                        onClick={() => {
+                          setIsEditingProfile(true);
+                          setProfileDisplayName(user?.displayName || '');
+                        }}
+                        className="px-3 py-2 bg-[#1F314F] text-gray-300 rounded-lg hover:bg-[#2A4A6F] transition-colors"
+                      >
+                        <i className="fas fa-edit"></i>
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm text-gray-400 mb-2">Email</label>
-                  <input 
-                    type="email" 
-                    defaultValue={user?.email || ''}
-                    className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white"
-                  />
+                  {isEditingProfile ? (
+                    <div className="flex gap-2">
+                      <input 
+                        type="email" 
+                        value={profileEmail}
+                        onChange={(e) => setProfileEmail(e.target.value)}
+                        className="flex-1 bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white"
+                      />
+                      <button 
+                        onClick={handleSaveProfile}
+                        className="px-3 py-2 bg-[#1E5F4A] text-white rounded-lg hover:bg-[#2A7A5F] transition-colors"
+                      >
+                        <i className="fas fa-check"></i>
+                      </button>
+                      <button 
+                        onClick={() => {
+                          setIsEditingProfile(false);
+                          setProfileEmail(user?.email || '');
+                        }}
+                        className="px-3 py-2 bg-[#3D4F5F] text-white rounded-lg hover:bg-[#4D5F6F] transition-colors"
+                      >
+                        <i className="fas fa-times"></i>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span className="flex-1 text-white py-2">{user?.email || ''}</span>
+                      <button 
+                        onClick={() => {
+                          setIsEditingProfile(true);
+                          setProfileEmail(user?.email || '');
+                        }}
+                        className="px-3 py-2 bg-[#1F314F] text-gray-300 rounded-lg hover:bg-[#2A4A6F] transition-colors"
+                      >
+                        <i className="fas fa-edit"></i>
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <button 
                   onClick={() => setShowPasswordModal(true)}
