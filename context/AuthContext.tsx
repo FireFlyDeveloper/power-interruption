@@ -6,6 +6,7 @@ import { User, hashPassword, LoginCredentials, ChangePasswordData, UpdateProfile
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   isLoading: boolean;
   error: string | null;
   login: (credentials: LoginCredentials) => Promise<boolean>;
@@ -239,6 +240,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider value={{
       user,
       isAuthenticated: !!user,
+      isAdmin: user?.role === 'admin',
       isLoading,
       error,
       login,

@@ -3,11 +3,13 @@
 import { useState, useCallback } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { useDevices } from '@/context/DeviceContext';
+import { useAuth } from '@/context/AuthContext';
 import { Device } from '@/types';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
 export default function DevicesPage() {
   const { devices, addDevice, removeDevice, reportPowerOutage, updateDevice } = useDevices();
+  const { isAdmin } = useAuth();
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
@@ -140,14 +142,16 @@ export default function DevicesPage() {
         </div>
       </div>
 
-      {/* Add Button */}
-      <button
-        onClick={() => setShowAddModal(true)}
-        className="mb-4 px-4 py-2 bg-[#1E5F4A] text-white rounded-lg font-medium hover:bg-[#2A7A5F] transition-colors flex items-center gap-2"
-      >
-        <i className="fas fa-plus"></i>
-        Add Device
-      </button>
+      {/* Add Button - Admin only */}
+      {isAdmin && (
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="mb-4 px-4 py-2 bg-[#1E5F4A] text-white rounded-lg font-medium hover:bg-[#2A7A5F] transition-colors flex items-center gap-2"
+        >
+          <i className="fas fa-plus"></i>
+          Add Device
+        </button>
+      )}
 
       {/* Device List */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -342,16 +346,18 @@ export default function DevicesPage() {
             </div>
 
             <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setShowDeleteConfirm(selectedDevice.id)}
-                className="flex-1 px-4 py-2 bg-[#4A2E2E] text-[#FCC5C5] rounded-lg font-medium hover:bg-[#5A3E3E] transition-colors border border-[#B45F5F]"
-              >
-                <i className="fas fa-trash mr-2"></i>
-                Delete
-              </button>
+              {isAdmin && (
+                <button
+                  onClick={() => setShowDeleteConfirm(selectedDevice.id)}
+                  className="flex-1 px-4 py-2 bg-[#4A2E2E] text-[#FCC5C5] rounded-lg font-medium hover:bg-[#5A3E3E] transition-colors border border-[#B45F5F]"
+                >
+                  <i className="fas fa-trash mr-2"></i>
+                  Delete
+                </button>
+              )}
               <button
                 onClick={handleEditDevice}
-                className="flex-1 px-4 py-2 bg-[#1E5F4A] text-white rounded-lg font-medium hover:bg-[#2A7A5F] transition-colors"
+                className={`flex-1 px-4 py-2 bg-[#1E5F4A] text-white rounded-lg font-medium hover:bg-[#2A7A5F] transition-colors ${!isAdmin ? 'w-full' : ''}`}
               >
                 <i className="fas fa-edit mr-2"></i>
                 Edit

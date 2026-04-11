@@ -8,10 +8,12 @@ import EventTable from '@/components/EventTable';
 import { PowerEvent } from '@/types';
 import DetailPanel from '@/components/DetailPanel';
 import { useDevices } from '@/context/DeviceContext';
+import { useAuth } from '@/context/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
 export default function EventsPage() {
   const { powerEvents, addPowerEvent } = useDevices();
+  const { isAdmin } = useAuth();
   const [selectedEvent, setSelectedEvent] = useState<PowerEvent | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -82,13 +84,15 @@ export default function EventsPage() {
                 <h1 className="text-2xl font-bold text-white">Events</h1>
                 <p className="text-gray-400 mt-1">Manage and view all power interruption events</p>
               </div>
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="px-4 py-2 bg-[#1E5F4A] text-white rounded-lg font-medium hover:bg-[#2A7A5F] transition-colors flex items-center gap-2"
-              >
-                <i className="fas fa-plus"></i>
-                Add Event
-              </button>
+              {isAdmin && (
+                <button
+                  onClick={() => setShowAddModal(true)}
+                  className="px-4 py-2 bg-[#1E5F4A] text-white rounded-lg font-medium hover:bg-[#2A7A5F] transition-colors flex items-center gap-2"
+                >
+                  <i className="fas fa-plus"></i>
+                  Add Event
+                </button>
+              )}
             </div>
 
             <div className="flex gap-3 mb-4">
