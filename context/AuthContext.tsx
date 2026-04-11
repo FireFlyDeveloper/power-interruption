@@ -17,6 +17,7 @@ interface AuthContextType {
   createUser: (userData: { email: string; displayName: string; role: 'admin' | 'user'; password: string }) => Promise<boolean>;
   updateUser: (userId: string, data: { displayName?: string; role?: 'admin' | 'user' }) => Promise<boolean>;
   deleteUser: (userId: string) => Promise<boolean>;
+  resetUserPassword: (userId: string, newPassword: string) => Promise<boolean>;
   clearError: () => void;
 }
 
@@ -333,6 +334,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user, users, saveUsers]);
 
+  const resetUserPassword = useCallback(async (userId: string, newPassword: string): Promise<boolean> => {
+    setError(null);
+
+    if (!user || user.role !== 'admin') {
+      setError('Only admins can reset passwords');
+      return false;
+    }
+
+    if (!newPassword || newPassword.length < 6) {
+      setError('Password must be at least 6 characters');
+      return false;
+    }
+
+    try {
+      const passwordHash = await hashPassword(newPassword);
+      const updatedUsers = users.map(u => {
+        if (u.id === userId) {
+          return { ...u, passwordHash };
+        }
+        return u;
+      });
+      saveUsers(updatedUsers);
+      return true;
+    } catch (err) {
+      setError('Failed to reset password');
+      return false;
+    }
+  }, [user, users, saveUsers]);
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -348,6 +378,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       createUser,
       updateUser,
       deleteUser,
+      resetUserPassword,
       clearError,
     }}>
       {children}

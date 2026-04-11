@@ -28,7 +28,7 @@ const defaultSettings: Settings = {
 };
 
 export default function SettingsPage() {
-  const { user, changePassword, isAdmin, createUser, users, updateUser, deleteUser } = useAuth();
+  const { user, changePassword, isAdmin, createUser, users, updateUser, deleteUser, resetUserPassword } = useAuth();
   const [settings, setSettings] = useState<Settings>(defaultSettings);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
@@ -50,6 +50,9 @@ export default function SettingsPage() {
   // User edit/delete state
   const [editingUser, setEditingUser] = useState<{ id: string; displayName: string; role: 'admin' | 'user' } | null>(null);
   const [deleteConfirmUser, setDeleteConfirmUser] = useState<string | null>(null);
+  const [resetPasswordUser, setResetPasswordUser] = useState<{ id: string; displayName: string } | null>(null);
+  const [newResetPassword, setNewResetPassword] = useState('');
+  const [resetPasswordSuccess, setResetPasswordSuccess] = useState(false);
 
   // Load settings from localStorage on mount
   useEffect(() => {
@@ -302,6 +305,13 @@ export default function SettingsPage() {
                       </div>
                       {u.id !== user?.id && (
                         <div className="flex gap-2">
+                          <button 
+                            onClick={() => setResetPasswordUser({ id: u.id, displayName: u.displayName })}
+                            className="px-3 py-1 text-sm bg-[#1E3A5F] text-blue-300 rounded hover:bg-[#2A4A6F] transition-colors"
+                            title="Reset Password"
+                          >
+                            <i className="fas fa-key"></i>
+                          </button>
                           <button 
                             onClick={() => setEditingUser({ id: u.id, displayName: u.displayName, role: u.role })}
                             className="px-3 py-1 text-sm bg-[#1F314F] text-gray-300 rounded hover:bg-[#2A4A6F] transition-colors"
@@ -637,6 +647,83 @@ export default function SettingsPage() {
                   Delete
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Reset User Password Modal */}
+        {resetPasswordUser && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+            <div className="bg-[#141C28] border border-[#273953] rounded-2xl p-6 w-full max-w-md">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold text-white">Reset Password</h2>
+                <button 
+                  onClick={() => {
+                    setResetPasswordUser(null);
+                    setNewResetPassword('');
+                    setResetPasswordSuccess(false);
+                  }}
+                  className="text-gray-400 hover:text-white"
+                >
+                  <i className="fas fa-times text-xl"></i>
+                </button>
+              </div>
+
+              <p className="text-gray-300 mb-4">Reset password for user: <span className="text-white font-medium">{resetPasswordUser.displayName}</span></p>
+
+              {resetPasswordSuccess && (
+                <div className="mb-4 p-3 bg-green-500/10 border border-green-500/50 rounded-lg text-green-400 text-sm">
+                  Password reset successfully!
+                </div>
+              )}
+
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                if (newResetPassword.length < 6) {
+                  return;
+                }
+                const success = await resetUserPassword(resetPasswordUser.id, newResetPassword);
+                if (success) {
+                  setResetPasswordSuccess(true);
+                  setNewResetPassword('');
+                  setTimeout(() => {
+                    setResetPasswordUser(null);
+                    setResetPasswordSuccess(false);
+                  }, 2000);
+                }
+              }} className="space-y-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-2">New Password</label>
+                  <input 
+                    type="password" 
+                    value={newResetPassword}
+                    onChange={(e) => setNewResetPassword(e.target.value)}
+                    className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white"
+                    required
+                    minLength={6}
+                    placeholder="Enter new password (min 6 characters)"
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      setResetPasswordUser(null);
+                      setNewResetPassword('');
+                    }}
+                    className="flex-1 px-6 py-2 bg-[#3D4F5F] text-white rounded-lg font-medium hover:bg-[#4D5F6F] transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit"
+                    className="flex-1 px-6 py-2 bg-[#1E5F4A] text-white rounded-lg font-medium hover:bg-[#2A7A5F] transition-colors"
+                  >
+                    Reset Password
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}
