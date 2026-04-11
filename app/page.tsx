@@ -10,6 +10,7 @@ import MapPanel from '@/components/MapPanel';
 import { PowerEvent } from '@/types';
 import DetailPanel from '@/components/DetailPanel';
 import { useDevices } from '@/context/DeviceContext';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 export default function DashboardPage() {
   const { powerEvents } = useDevices();
@@ -27,37 +28,39 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-[#0C1119] text-gray-200 antialiased text-base">
-      <Header />
-      
-      <div className="flex flex-1 overflow-hidden relative">
-        <Sidebar pathname="/" />
+    <ProtectedRoute>
+      <div className="flex flex-col h-screen overflow-hidden bg-[#0C1119] text-gray-200 antialiased text-base">
+        <Header />
         
-        <main className="flex-1 overflow-y-auto thin-scroll bg-[#0C1119] px-4 sm:px-6 pb-28 md:pb-6 relative">
-          <StatCards />
+        <div className="flex flex-1 overflow-hidden relative">
+          <Sidebar pathname="/" />
           
-          <div className="flex flex-col lg:flex-row gap-5 sm:gap-6 mt-7">
-            <EventTable 
-              events={powerEvents} 
-              onEventClick={handleEventClick} 
-            />
-            <MapPanel 
-              events={powerEvents} 
-              onMarkerClick={handleEventClick} 
-            />
-          </div>
-          
-          <div className="h-24 md:h-6"></div>
-        </main>
-      </div>
+          <main className="flex-1 overflow-y-auto thin-scroll bg-[#0C1119] px-4 sm:px-6 pb-28 md:pb-6 relative">
+            <StatCards />
+            
+            <div className="flex flex-col lg:flex-row gap-5 sm:gap-6 mt-7">
+              <EventTable 
+                events={powerEvents} 
+                onEventClick={handleEventClick} 
+              />
+              <MapPanel 
+                events={powerEvents} 
+                onMarkerClick={handleEventClick} 
+              />
+            </div>
+            
+            <div className="h-24 md:h-6"></div>
+          </main>
+        </div>
 
-      <MobileNav />
-      
-      <DetailPanel 
-        event={selectedEvent} 
-        isOpen={isPanelOpen} 
-        onClose={handleClosePanel} 
-      />
-    </div>
+        <MobileNav />
+        
+        <DetailPanel 
+          event={selectedEvent} 
+          isOpen={isPanelOpen} 
+          onClose={handleClosePanel} 
+        />
+      </div>
+    </ProtectedRoute>
   );
 }

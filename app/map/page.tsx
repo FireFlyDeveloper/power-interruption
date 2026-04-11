@@ -8,6 +8,7 @@ import MobileNav from '@/components/MobileNav';
 import { PowerEvent } from '@/types';
 import DetailPanel from '@/components/DetailPanel';
 import { useDevices } from '@/context/DeviceContext';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 const Map = dynamic(() => import('@/components/Map'), {
   ssr: false,
@@ -45,8 +46,9 @@ export default function MapPage() {
     : powerEvents.filter(event => event.status.toLowerCase() === statusFilter);
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-[#0C1119] text-gray-200 antialiased text-base">
-      <Header />
+    <ProtectedRoute>
+      <div className="flex flex-col h-screen overflow-hidden bg-[#0C1119] text-gray-200 antialiased text-base">
+        <Header />
       
       <div className="flex flex-1 overflow-hidden relative">
         <Sidebar pathname="/map" />
@@ -127,6 +129,7 @@ export default function MapPage() {
         isOpen={isPanelOpen} 
         onClose={handleClosePanel} 
       />
-    </div>
+      </div>
+    </ProtectedRoute>
   );
 }

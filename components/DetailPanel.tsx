@@ -2,6 +2,7 @@
 
 import { PowerEvent, EventTimeline } from '@/types';
 import { getEventTimeline } from '@/data/events';
+import { useDevices } from '@/context/DeviceContext';
 
 interface DetailPanelProps {
   event: PowerEvent | null;
@@ -49,9 +50,15 @@ const getTimelineIconClass = (status: EventTimeline['status']) => {
 };
 
 export default function DetailPanel({ event, isOpen, onClose }: DetailPanelProps) {
+  const { updateEventStatus } = useDevices();
+
   if (!event) return null;
 
   const timeline = getEventTimeline(event);
+
+  const handleStatusChange = (newStatus: 'Active' | 'Investigating' | 'Resolved') => {
+    updateEventStatus(event.id, newStatus);
+  };
 
   return (
     <>
@@ -88,6 +95,30 @@ export default function DetailPanel({ event, isOpen, onClose }: DetailPanelProps
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-5 thin-scroll text-base">
+          {/* Status Update Buttons */}
+          {event.status !== 'Resolved' && (
+            <div className="flex flex-wrap gap-2">
+              {event.status === 'Active' && (
+                <button
+                  onClick={() => handleStatusChange('Investigating')}
+                  className="px-3 py-1.5 bg-[#4A4024] text-[#FCE6B4] rounded-lg text-sm font-medium hover:bg-[#5A5034] transition-colors border border-[#C6993A]"
+                >
+                  <i className="fas fa-search mr-1"></i>
+                  Start Investigating
+                </button>
+              )}
+              {(event.status === 'Active' || event.status === 'Investigating') && (
+                <button
+                  onClick={() => handleStatusChange('Resolved')}
+                  className="px-3 py-1.5 bg-[#1E5F4A] text-[#BCF0D5] rounded-lg text-sm font-medium hover:bg-[#2E7A5F] transition-colors border border-[#479A6E]"
+                >
+                  <i className="fas fa-check mr-1"></i>
+                  Mark Resolved
+                </button>
+              )}
+            </div>
+          )}
+
           <div className="flex justify-between border-b border-[#38618B] pb-3">
             <span className="text-gray-400 text-base">Severity</span>
             <span className={`text-lg font-semibold ${getSeverityClass(event.severity)}`}>

@@ -12,6 +12,8 @@ interface DeviceContextType {
   getDevice: (id: string) => Device | undefined;
   reportPowerOutage: (deviceId: string, severity: 'Critical' | 'Medium' | 'Low') => void;
   resolvePowerOutage: (eventId: string) => void;
+  addPowerEvent: (event: Omit<PowerEvent, 'id' | 'status' | 'start' | 'duration'>) => void;
+  updateEventStatus: (eventId: string, status: 'Active' | 'Investigating' | 'Resolved') => void;
 }
 
 const DeviceContext = createContext<DeviceContextType | undefined>(undefined);
@@ -139,6 +141,31 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
     ));
   }, []);
 
+  // Add a new power event
+  const addPowerEvent = useCallback((eventData: Omit<PowerEvent, 'id' | 'status' | 'start' | 'duration'>) => {
+    const newEvent: PowerEvent = {
+      ...eventData,
+      id: `EVT-${Date.now()}`,
+      status: 'Active',
+      start: new Date().toISOString(),
+      duration: '0 min',
+    };
+    setPowerEvents(prev => [...prev, newEvent]);
+  }, []);
+
+  // Update event status
+  const updateEventStatus = useCallback((eventId: string, status: 'Active' | 'Investigating' | 'Resolved') => {
+    setPowerEvents(prev => prev.map(e => 
+      e.id === eventId 
+        ? { 
+            ...e, 
+            status, 
+            duration: status === 'Resolved' ? 'Resolved' : e.duration 
+          }
+        : e
+    ));
+  }, []);
+
   return (
     <DeviceContext.Provider value={{ 
       devices, 
@@ -149,6 +176,8 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
       getDevice,
       reportPowerOutage,
       resolvePowerOutage,
+      addPowerEvent,
+      updateEventStatus,
     }}>
       {children}
     </DeviceContext.Provider>

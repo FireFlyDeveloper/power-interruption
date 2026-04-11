@@ -4,12 +4,19 @@ import { useState, useCallback } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { useDevices } from '@/context/DeviceContext';
 import { Device } from '@/types';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 export default function DevicesPage() {
-  const { devices, addDevice, removeDevice, reportPowerOutage } = useDevices();
+  const { devices, addDevice, removeDevice, reportPowerOutage, updateDevice } = useDevices();
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  
+  // Edit form state
+  const [editName, setEditName] = useState('');
+  const [editGrid, setEditGrid] = useState('');
+  const [editStatus, setEditStatus] = useState<'online' | 'offline'>('online');
 
   // Form state
   const [deviceName, setDeviceName] = useState('');
@@ -76,6 +83,25 @@ export default function DevicesPage() {
     setSelectedDevice(null);
   }, [removeDevice]);
 
+  const handleEditDevice = useCallback(() => {
+    if (!selectedDevice) return;
+    setEditName(selectedDevice.name);
+    setEditGrid(selectedDevice.grid);
+    setEditStatus(selectedDevice.status);
+    setIsEditing(true);
+  }, [selectedDevice]);
+
+  const handleSaveEdit = useCallback(() => {
+    if (!selectedDevice || !editName.trim()) return;
+    updateDevice(selectedDevice.id, {
+      name: editName,
+      grid: editGrid,
+      status: editStatus,
+    });
+    setIsEditing(false);
+    setSelectedDevice(null);
+  }, [selectedDevice, editName, editGrid, editStatus, updateDevice]);
+
   const formatLastSeen = (isoString: string) => {
     const date = new Date(isoString);
     const now = new Date();
@@ -91,7 +117,8 @@ export default function DevicesPage() {
   const offlineCount = devices.filter(d => d.status === 'offline').length;
 
   return (
-    <AppLayout>
+    <ProtectedRoute>
+      <AppLayout>
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-white">Devices</h1>
         <p className="text-gray-400 mt-1">Manage grid monitoring devices</p>
@@ -323,6 +350,13 @@ export default function DevicesPage() {
                 Delete
               </button>
               <button
+                onClick={handleEditDevice}
+                className="flex-1 px-4 py-2 bg-[#1E5F4A] text-white rounded-lg font-medium hover:bg-[#2A7A5F] transition-colors"
+              >
+                <i className="fas fa-edit mr-2"></i>
+                Edit
+              </button>
+              <button
                 onClick={() => setSelectedDevice(null)}
                 className="flex-1 px-4 py-2 bg-[#1F314F] text-white rounded-lg font-medium hover:bg-[#2A3E5A] transition-colors"
               >
@@ -364,7 +398,88 @@ export default function DevicesPage() {
         </div>
       )}
 
+      {/* Edit Device Modal */}
+      {isEditing && selectedDevice && (
+        <div className="fixed inset-0 bg-black/80 z-[60] flex items-center justify-center p-4">
+          <div className="bg-[#142336] border border-[#375F8F] rounded-2xl p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold text-white mb-4">Edit Device</h2>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Device Name</label>
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#5A8BC9]"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Grid</label>
+                <select
+                  value={editGrid}
+                  onChange={(e) => setEditGrid(e.target.value)}
+                  className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#5A8BC9]"
+                >
+                  <option>Balayan North</option>
+                  <option>Balayan Central</option>
+                  <option>Balayan South</option>
+                  <option>Balayan East</option>
+                  <option>Balayan West</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Status</label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="editStatus"
+                      value="online"
+                      checked={editStatus === 'online'}
+                      onChange={() => setEditStatus('online')}
+                      className="w-4 h-4 accent-[#1E5F4A]"
+                    />
+                    <span className="text-white">Online</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="editStatus"
+                      value="offline"
+                      checked={editStatus === 'offline'}
+                      onChange={() => setEditStatus('offline')}
+                      className="w-4 h-4 accent-[#B45F5F]"
+                    />
+                    <span className="text-white">Offline</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setIsEditing(false)}
+                className="flex-1 px-4 py-2 bg-[#1F314F] text-white rounded-lg font-medium hover:bg-[#2A3E5A] transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveEdit}
+                disabled={!editName.trim()}
+                className="flex-1 px-4 py-2 bg-[#1E5F4A] text-white rounded-lg font-medium hover:bg-[#2A7A5F] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="h-24 md:h-6"></div>
     </AppLayout>
+    </ProtectedRoute>
   );
 }
