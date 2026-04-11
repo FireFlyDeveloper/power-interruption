@@ -28,7 +28,7 @@ const defaultSettings: Settings = {
 };
 
 export default function SettingsPage() {
-  const { user, changePassword, isAdmin, createUser } = useAuth();
+  const { user, changePassword, isAdmin, createUser, users, updateUser, deleteUser } = useAuth();
   const [settings, setSettings] = useState<Settings>(defaultSettings);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
@@ -46,6 +46,10 @@ export default function SettingsPage() {
   const [newUserPassword, setNewUserPassword] = useState('');
   const [userError, setUserError] = useState('');
   const [userSuccess, setUserSuccess] = useState(false);
+  
+  // User edit/delete state
+  const [editingUser, setEditingUser] = useState<{ id: string; displayName: string; role: 'admin' | 'user' } | null>(null);
+  const [deleteConfirmUser, setDeleteConfirmUser] = useState<string | null>(null);
 
   // Load settings from localStorage on mount
   useEffect(() => {
@@ -283,6 +287,38 @@ export default function SettingsPage() {
                   <i className="fas fa-user-plus mr-2"></i>
                   Create New User
                 </button>
+
+                {/* User List */}
+                <div className="mt-6 space-y-3">
+                  <h3 className="text-md font-medium text-gray-300">Existing Users</h3>
+                  {users.map(u => (
+                    <div key={u.id} className="flex items-center justify-between bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-3">
+                      <div>
+                        <p className="text-white font-medium">{u.displayName}</p>
+                        <p className="text-sm text-gray-400">{u.email}</p>
+                        <span className={`inline-block mt-1 text-xs px-2 py-1 rounded ${u.role === 'admin' ? 'bg-[#1E5F4A] text-green-300' : 'bg-[#3D4F5F] text-gray-300'}`}>
+                          {u.role === 'admin' ? 'Admin' : 'User'}
+                        </span>
+                      </div>
+                      {u.id !== user?.id && (
+                        <div className="flex gap-2">
+                          <button 
+                            onClick={() => setEditingUser({ id: u.id, displayName: u.displayName, role: u.role })}
+                            className="px-3 py-1 text-sm bg-[#1F314F] text-gray-300 rounded hover:bg-[#2A4A6F] transition-colors"
+                          >
+                            <i className="fas fa-edit"></i>
+                          </button>
+                          <button 
+                            onClick={() => setDeleteConfirmUser(u.id)}
+                            className="px-3 py-1 text-sm bg-[#4A2E2E] text-[#FCC5C5] rounded hover:bg-[#5A3E3E] transition-colors"
+                          >
+                            <i className="fas fa-trash"></i>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -498,6 +534,109 @@ export default function SettingsPage() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Edit User Modal */}
+        {editingUser && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+            <div className="bg-[#141C28] border border-[#273953] rounded-2xl p-6 w-full max-w-md">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold text-white">Edit User</h2>
+                <button 
+                  onClick={() => setEditingUser(null)}
+                  className="text-gray-400 hover:text-white"
+                >
+                  <i className="fas fa-times text-xl"></i>
+                </button>
+              </div>
+
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                const success = await updateUser(editingUser.id, {
+                  displayName: editingUser.displayName,
+                  role: editingUser.role,
+                });
+                if (success) {
+                  setEditingUser(null);
+                }
+              }} className="space-y-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-2">Display Name</label>
+                  <input 
+                    type="text" 
+                    value={editingUser.displayName}
+                    onChange={(e) => setEditingUser({ ...editingUser, displayName: e.target.value })}
+                    className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-2">Role</label>
+                  <select 
+                    value={editingUser.role}
+                    onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value as 'admin' | 'user' })}
+                    className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white"
+                  >
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button 
+                    type="button"
+                    onClick={() => setEditingUser(null)}
+                    className="flex-1 px-6 py-2 bg-[#3D4F5F] text-white rounded-lg font-medium hover:bg-[#4D5F6F] transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit"
+                    className="flex-1 px-6 py-2 bg-[#1E5F4A] text-white rounded-lg font-medium hover:bg-[#2A7A5F] transition-colors"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Delete User Confirmation */}
+        {deleteConfirmUser && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+            <div className="bg-[#141C28] border border-[#273953] rounded-2xl p-6 w-full max-w-md">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold text-white">Delete User</h2>
+                <button 
+                  onClick={() => setDeleteConfirmUser(null)}
+                  className="text-gray-400 hover:text-white"
+                >
+                  <i className="fas fa-times text-xl"></i>
+                </button>
+              </div>
+
+              <p className="text-gray-300 mb-6">Are you sure you want to delete this user? This action cannot be undone.</p>
+
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setDeleteConfirmUser(null)}
+                  className="flex-1 px-6 py-2 bg-[#3D4F5F] text-white rounded-lg font-medium hover:bg-[#4D5F6F] transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={async () => {
+                    await deleteUser(deleteConfirmUser);
+                    setDeleteConfirmUser(null);
+                  }}
+                  className="flex-1 px-6 py-2 bg-[#4A2E2E] text-[#FCC5C5] rounded-lg font-medium hover:bg-[#5A3E3E] transition-colors border border-[#B45F5F]"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           </div>
         )}

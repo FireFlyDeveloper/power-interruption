@@ -5,6 +5,7 @@ import { User, hashPassword, LoginCredentials, ChangePasswordData, UpdateProfile
 
 interface AuthContextType {
   user: User | null;
+  users: User[];
   isAuthenticated: boolean;
   isAdmin: boolean;
   isLoading: boolean;
@@ -14,6 +15,8 @@ interface AuthContextType {
   changePassword: (data: ChangePasswordData) => Promise<boolean>;
   updateProfile: (data: UpdateProfileData) => Promise<boolean>;
   createUser: (userData: { email: string; displayName: string; role: 'admin' | 'user'; password: string }) => Promise<boolean>;
+  updateUser: (userId: string, data: { displayName?: string; role?: 'admin' | 'user' }) => Promise<boolean>;
+  deleteUser: (userId: string) => Promise<boolean>;
   clearError: () => void;
 }
 
@@ -277,9 +280,63 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user, users, saveUsers]);
 
+  const updateUser = useCallback(async (userId: string, data: { displayName?: string; role?: 'admin' | 'user' }): Promise<boolean> => {
+    setError(null);
+
+    if (!user || user.role !== 'admin') {
+      setError('Only admins can update users');
+      return false;
+    }
+
+    // Cannot update yourself (prevent removing own admin)
+    if (userId === user.id) {
+      setError('Cannot modify your own account');
+      return false;
+    }
+
+    try {
+      const updatedUsers = users.map(u => {
+        if (u.id === userId) {
+          return { ...u, ...data };
+        }
+        return u;
+      });
+      saveUsers(updatedUsers);
+      return true;
+    } catch (err) {
+      setError('Failed to update user');
+      return false;
+    }
+  }, [user, users, saveUsers]);
+
+  const deleteUser = useCallback(async (userId: string): Promise<boolean> => {
+    setError(null);
+
+    if (!user || user.role !== 'admin') {
+      setError('Only admins can delete users');
+      return false;
+    }
+
+    // Cannot delete yourself
+    if (userId === user.id) {
+      setError('Cannot delete your own account');
+      return false;
+    }
+
+    try {
+      const updatedUsers = users.filter(u => u.id !== userId);
+      saveUsers(updatedUsers);
+      return true;
+    } catch (err) {
+      setError('Failed to delete user');
+      return false;
+    }
+  }, [user, users, saveUsers]);
+
   return (
     <AuthContext.Provider value={{
       user,
+      users,
       isAuthenticated: !!user,
       isAdmin: user?.role === 'admin',
       isLoading,
@@ -289,6 +346,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       changePassword,
       updateProfile,
       createUser,
+      updateUser,
+      deleteUser,
       clearError,
     }}>
       {children}
