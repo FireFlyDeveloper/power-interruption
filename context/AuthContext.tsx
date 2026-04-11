@@ -13,6 +13,7 @@ interface AuthContextType {
   logout: () => void;
   changePassword: (data: ChangePasswordData) => Promise<boolean>;
   updateProfile: (data: UpdateProfileData) => Promise<boolean>;
+  createUser: (userData: { email: string; displayName: string; role: 'admin' | 'user'; password: string }) => Promise<boolean>;
   clearError: () => void;
 }
 
@@ -236,6 +237,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
   }, []);
 
+  const createUser = useCallback(async (userData: { email: string; displayName: string; role: 'admin' | 'user'; password: string }): Promise<boolean> => {
+    setError(null);
+
+    if (!user || user.role !== 'admin') {
+      setError('Only admins can create users');
+      return false;
+    }
+
+    if (!userData.email || !userData.password || !userData.displayName) {
+      setError('All fields are required');
+      return false;
+    }
+
+    // Check if email already exists
+    const emailExists = users.some(u => u.email.toLowerCase() === userData.email.toLowerCase());
+    if (emailExists) {
+      setError('Email already in use');
+      return false;
+    }
+
+    try {
+      const passwordHash = await hashPassword(userData.password);
+      const newUser = {
+        id: `USR-${String(users.length + 1).padStart(3, '0')}`,
+        email: userData.email,
+        displayName: userData.displayName,
+        role: userData.role,
+        passwordHash,
+        createdAt: new Date().toISOString(),
+      };
+
+      const updatedUsers = [...users, newUser];
+      saveUsers(updatedUsers);
+      return true;
+    } catch (err) {
+      setError('Failed to create user');
+      return false;
+    }
+  }, [user, users, saveUsers]);
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -247,6 +288,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout,
       changePassword,
       updateProfile,
+      createUser,
       clearError,
     }}>
       {children}

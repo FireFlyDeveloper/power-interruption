@@ -28,7 +28,7 @@ const defaultSettings: Settings = {
 };
 
 export default function SettingsPage() {
-  const { user, changePassword } = useAuth();
+  const { user, changePassword, isAdmin, createUser } = useAuth();
   const [settings, setSettings] = useState<Settings>(defaultSettings);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
@@ -37,6 +37,15 @@ export default function SettingsPage() {
   const [passwordError, setPasswordError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
+  
+  // User management state (admin only)
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [newUserEmail, setNewUserEmail] = useState('');
+  const [newUserName, setNewUserName] = useState('');
+  const [newUserRole, setNewUserRole] = useState<'admin' | 'user'>('user');
+  const [newUserPassword, setNewUserPassword] = useState('');
+  const [userError, setUserError] = useState('');
+  const [userSuccess, setUserSuccess] = useState(false);
 
   // Load settings from localStorage on mount
   useEffect(() => {
@@ -262,6 +271,21 @@ export default function SettingsPage() {
               </div>
             </div>
 
+            {/* User Management - Admin only */}
+            {isAdmin && (
+              <div className="bg-[#141C28] border border-[#273953] rounded-2xl p-6 mb-6">
+                <h2 className="text-lg font-semibold text-white mb-4">User Management</h2>
+                <p className="text-sm text-gray-400 mb-4">Create and manage user accounts</p>
+                <button 
+                  onClick={() => setShowUserModal(true)}
+                  className="px-6 py-2 bg-[#1E5F4A] text-white rounded-lg font-medium hover:bg-[#2A7A5F] transition-colors"
+                >
+                  <i className="fas fa-user-plus mr-2"></i>
+                  Create New User
+                </button>
+              </div>
+            )}
+
             <div className="h-24 md:h-6"></div>
           </main>
         </div>
@@ -340,6 +364,137 @@ export default function SettingsPage() {
                     className="flex-1 px-6 py-2 bg-[#1E5F4A] text-white rounded-lg font-medium hover:bg-[#2A7A5F] transition-colors disabled:opacity-50"
                   >
                     {isSavingPassword ? 'Saving...' : 'Save Password'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Create User Modal - Admin only */}
+        {showUserModal && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+            <div className="bg-[#141C28] border border-[#273953] rounded-2xl p-6 w-full max-w-md">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold text-white">Create New User</h2>
+                <button 
+                  onClick={() => {
+                    setShowUserModal(false);
+                    setNewUserEmail('');
+                    setNewUserName('');
+                    setNewUserRole('user');
+                    setNewUserPassword('');
+                    setUserError('');
+                    setUserSuccess(false);
+                  }}
+                  className="text-gray-400 hover:text-white"
+                >
+                  <i className="fas fa-times text-xl"></i>
+                </button>
+              </div>
+
+              {userError && (
+                <div className="mb-4 p-3 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400 text-sm">
+                  {userError}
+                </div>
+              )}
+
+              {userSuccess && (
+                <div className="mb-4 p-3 bg-green-500/10 border border-green-500/50 rounded-lg text-green-400 text-sm">
+                  User created successfully!
+                </div>
+              )}
+
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                setUserError('');
+                setUserSuccess(false);
+                
+                if (newUserPassword.length < 6) {
+                  setUserError('Password must be at least 6 characters');
+                  return;
+                }
+
+                const success = await createUser({
+                  email: newUserEmail,
+                  displayName: newUserName,
+                  role: newUserRole,
+                  password: newUserPassword,
+                });
+
+                if (success) {
+                  setUserSuccess(true);
+                  setNewUserEmail('');
+                  setNewUserName('');
+                  setNewUserRole('user');
+                  setNewUserPassword('');
+                  setTimeout(() => {
+                    setShowUserModal(false);
+                    setUserSuccess(false);
+                  }, 2000);
+                } else {
+                  setUserError('Failed to create user. Email may already exist.');
+                }
+              }} className="space-y-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-2">Display Name</label>
+                  <input 
+                    type="text" 
+                    value={newUserName}
+                    onChange={(e) => setNewUserName(e.target.value)}
+                    className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-2">Email</label>
+                  <input 
+                    type="email" 
+                    value={newUserEmail}
+                    onChange={(e) => setNewUserEmail(e.target.value)}
+                    className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-2">Role</label>
+                  <select 
+                    value={newUserRole}
+                    onChange={(e) => setNewUserRole(e.target.value as 'admin' | 'user')}
+                    className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white"
+                  >
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-2">Password</label>
+                  <input 
+                    type="password" 
+                    value={newUserPassword}
+                    onChange={(e) => setNewUserPassword(e.target.value)}
+                    className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white"
+                    required
+                    minLength={6}
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      setShowUserModal(false);
+                      setUserError('');
+                    }}
+                    className="flex-1 px-6 py-2 bg-[#3D4F5F] text-white rounded-lg font-medium hover:bg-[#4D5F6F] transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit"
+                    className="flex-1 px-6 py-2 bg-[#1E5F4A] text-white rounded-lg font-medium hover:bg-[#2A7A5F] transition-colors"
+                  >
+                    Create User
                   </button>
                 </div>
               </form>
