@@ -193,13 +193,6 @@ export default function DevicesPage() {
               >
                 View Details
               </button>
-              <button
-                onClick={() => reportPowerOutage(device.id, 'Critical')}
-                className="px-3 py-2 bg-[#4A2E2E] text-[#FCC5C5] rounded-lg text-sm font-medium hover:bg-[#5A3E3E] transition-colors border border-[#B45F5F]"
-                title="Simulate power outage detection"
-              >
-                <i className="fas fa-bolt-slash"></i>
-              </button>
             </div>
           </div>
         ))}

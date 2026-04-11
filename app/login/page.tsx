@@ -95,23 +95,6 @@ export default function LoginPage() {
               )}
             </button>
           </form>
-
-          {/* Demo Credentials */}
-          <div className="mt-6 p-4 bg-gray-800/50 rounded-lg">
-            <p className="text-xs text-gray-400 mb-2 font-medium">Demo Credentials:</p>
-            <div className="space-y-1 text-xs text-gray-500">
-              <p><span className="text-gray-400">Admin:</span> admin@power-monitor.com / admin123</p>
-              <p><span className="text-gray-400">User:</span> user@power-monitor.com / user123</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Back to home */}
-        <div className="text-center mt-6">
-          <a href="/" className="text-gray-400 hover:text-blue-400 text-sm transition-colors">
-            <i className="fas fa-arrow-left mr-2"></i>
-            Back to Dashboard
-          </a>
         </div>
       </div>
     </div>
