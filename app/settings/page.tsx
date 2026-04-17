@@ -38,6 +38,8 @@ export default function SettingsPage() {
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
   
+  
+  
   // Profile edit state
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileDisplayName, setProfileDisplayName] = useState('');
@@ -426,6 +428,9 @@ export default function SettingsPage() {
               </form>
             </div>
           </div>
+        )}
+
+
       </div>
     </ProtectedRoute>
   );
