@@ -338,22 +338,24 @@ export default function SettingsPage() {
                     </div>
                   )}
                 </div>
+                </div>
                 <div className="flex gap-3">
-                <button 
-                  onClick={() => setShowPasswordModal(true)}
-                  className="px-6 py-2 bg-[#1E5F4A] text-white rounded-lg font-medium hover:bg-[#2A7A5F] transition-colors"
-                >
-                  Change Password
-                </button>
-                <button 
-                  onClick={() => {
-                    logout();
-                    router.push('/login');
-                  }}
-                  className="px-6 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
-                >
-                  Logout
-                </button>
+                  <button
+                    onClick={() => setShowPasswordModal(true)}
+                    className="px-6 py-2 bg-[#1E5F4A] text-white rounded-lg font-medium hover:bg-[#2A7A5F] transition-colors"
+                  >
+                    Change Password
+                  </button>
+                  <button
+                    onClick={() => {
+                      logout();
+                      router.push('/login');
+                    }}
+                    className="px-6 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
+                  >
+                    Logout
+                  </button>
+                </div>
               </div>
             </div>
 
