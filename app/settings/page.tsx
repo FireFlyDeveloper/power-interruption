@@ -160,7 +160,7 @@ export default function SettingsPage() {
               <label className="block text-sm text-gray-400 mb-2">Display Name</label>
               <input 
                 type="text" 
-                defaultValue={user?.name || "Admin User"}
+                defaultValue={user?.displayName || "Admin User"}
                 className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white"
               />
             </div>
