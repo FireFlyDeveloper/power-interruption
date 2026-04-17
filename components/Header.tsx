@@ -1,12 +1,10 @@
 'use client';
 
-import { useClock } from '@/hooks/useClock';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 
 export default function Header() {
-  const time = useClock();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { logout } = useAuth();
   const router = useRouter();
 
   const handleLogout = () => {
@@ -27,20 +25,7 @@ export default function Header() {
       </div>
       
       <div className="flex items-center gap-3 sm:gap-5">
-        <div className="hidden md:flex items-center bg-[#1F3149] rounded-full px-5 py-2 border border-[#3F5B83]">
-          <i className="far fa-clock text-gray-300 mr-2 text-base"></i>
-          <span className="font-mono text-base text-white">{time}</span>
-        </div>
-
-        {isAuthenticated && (
-          <div className="flex items-center gap-2">
-            <a 
-              href="/profile"
-              className="flex items-center gap-2 px-3 py-2 bg-[#1F3149] rounded-lg border border-[#3F5B83] hover:bg-[#2A4170] transition-colors"
-            >
-              <i className="fas fa-user text-gray-300 text-sm"></i>
-              <span className="hidden sm:block text-sm text-gray-300">{user?.displayName}</span>
-            </a>
+        <div className="flex items-center gap-2">
             <button
               onClick={handleLogout}
               className="p-2 bg-[#1F3149] rounded-lg border border-[#3F5B83] hover:bg-red-500/20 hover:border-red-500/50 transition-colors"
@@ -49,7 +34,6 @@ export default function Header() {
               <i className="fas fa-sign-out-alt text-gray-300 text-sm"></i>
             </button>
           </div>
-        )}
       </div>
     </header>
   );
