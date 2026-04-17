@@ -37,21 +37,11 @@ const defaultUsers: Array<User & { passwordHash: string }> = [
     createdAt: '2024-01-01T00:00:00.000Z',
     lastLogin: undefined,
   },
-  {
-    id: 'USR-002',
-    email: 'user@power-monitor.com',
-    displayName: 'Standard User',
-    role: 'user',
-    passwordHash: '', // Will be set after hashing 'user123'
-    createdAt: '2024-01-15T00:00:00.000Z',
-    lastLogin: undefined,
-  },
 ];
 
 async function initializeDefaultUsers() {
   const users = [...defaultUsers];
   users[0].passwordHash = await hashPassword('admin123');
-  users[1].passwordHash = await hashPassword('user123');
   return users;
 }
 
