@@ -338,6 +338,7 @@ export default function SettingsPage() {
                     </div>
                   )}
                 </div>
+                <div className="flex gap-3">
                 <button 
                   onClick={() => setShowPasswordModal(true)}
                   className="px-6 py-2 bg-[#1E5F4A] text-white rounded-lg font-medium hover:bg-[#2A7A5F] transition-colors"
