@@ -9,7 +9,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
 
 export default function SettingsPage() {
-  const { user, logout } = useAuth();
+  const { user, logout, updateProfile } = useAuth();
   const router = useRouter();
   const [notifications, setNotifications] = useState(true);
   const [emailAlerts, setEmailAlerts] = useState(false);
@@ -17,6 +17,9 @@ export default function SettingsPage() {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [refreshInterval, setRefreshInterval] = useState('30');
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [displayName, setDisplayName] = useState(user?.displayName || '');
+  const [email, setEmail] = useState(user?.email || '');
 
   return (
     <ProtectedRoute>
@@ -135,7 +138,9 @@ export default function SettingsPage() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm text-gray-400 mb-2">Grid Location</label>
-              <select className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white">
+              <select onChange={(e) => setDisplayName(e.target.value)}
+                disabled={!isEditing}
+                className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white disabled:opacity-50">
                 <option>Balayan, Batangas</option>
                 <option>Lipa City, Batangas</option>
                 <option>Batangas City</option>
@@ -143,7 +148,9 @@ export default function SettingsPage() {
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-2">Alert Threshold</label>
-              <select className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white">
+              <select onChange={(e) => setDisplayName(e.target.value)}
+                disabled={!isEditing}
+                className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white disabled:opacity-50">
                 <option>Low (All incidents)</option>
                 <option>Medium (Critical & High)</option>
                 <option>High (Critical only)</option>
@@ -160,15 +167,48 @@ export default function SettingsPage() {
               <label className="block text-sm text-gray-400 mb-2">Display Name</label>
               <input 
                 type="text" 
-                defaultValue={user?.displayName || "Admin User"}
-                className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white"
+                value={isEditing ? displayName : (user?.displayName || "")}
+                onChange={(e) => setDisplayName(e.target.value)}
+                disabled={!isEditing}
+                className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white disabled:opacity-50"
               />
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-2">Email</label>
-              <span className="text-white py-2 block">{user?.email || ''}</span>
+              {isEditing ? (
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                disabled={!isEditing}
+                className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white disabled:opacity-50"
+                />
+              ) : (
+                <span className="text-white py-2 block">{user?.email || ''}</span>
+              )}
             </div>
             <div className="flex gap-3">
+              <button
+                onClick={async () => {
+                  if (isEditing) {
+                    const success = await updateProfile({
+                      displayName: displayName || user?.displayName || '',
+                      email: email || user?.email || '',
+                    });
+                    if (success) {
+                      setIsEditing(false);
+                    }
+                  } else {
+                    setDisplayName(user?.displayName || '');
+                    setEmail(user?.email || '');
+                    setIsEditing(true);
+                  }
+                }}
+                className="px-6 py-2 bg-[#1E5F4A] text-white rounded-lg font-medium hover:bg-[#2A7A5F] transition-colors"
+              >
+                {isEditing ? 'Save' : 'Edit'}
+              </button>
               <button
                 onClick={() => setShowPasswordModal(true)}
                 className="px-6 py-2 bg-[#1E5F4A] text-white rounded-lg font-medium hover:bg-[#2A7A5F] transition-colors"
@@ -206,14 +246,18 @@ export default function SettingsPage() {
                 <label className="block text-sm text-gray-400 mb-2">New Password</label>
                 <input
                   type="password"
-                  className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white"
+                  onChange={(e) => setDisplayName(e.target.value)}
+                disabled={!isEditing}
+                className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white disabled:opacity-50"
                 />
               </div>
               <div>
                 <label className="block text-sm text-gray-400 mb-2">Confirm Password</label>
                 <input
                   type="password"
-                  className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white"
+                  onChange={(e) => setDisplayName(e.target.value)}
+                disabled={!isEditing}
+                className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white disabled:opacity-50"
                 />
               </div>
               <div className="flex gap-3 pt-2">
