@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { PowerEvent } from '@/types';
 
 interface EventTableProps {
@@ -35,14 +35,57 @@ const getSeverityClass = (severity: string) => {
 };
 
 export default function EventTable({ events, onEventClick }: EventTableProps) {
-  // Memoize events to prevent unnecessary re-renders
-  const memoizedEvents = useMemo(() => events, [events]);
-  
-  // Memoize the callback to prevent re-renders
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState<string>('All');
+  const [filterSeverity, setFilterSeverity] = useState<string>('All');
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const [showSeverityDropdown, setShowSeverityDropdown] = useState(false);
+
+  // Filter events based on search and filters
+  const filteredEvents = useMemo(() => {
+    return events.filter(event => {
+      // Search filter
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const matchesSearch = 
+          event.id.toLowerCase().includes(query) ||
+          event.location.toLowerCase().includes(query) ||
+          event.grid.toLowerCase().includes(query);
+        if (!matchesSearch) return false;
+      }
+      
+      // Status filter
+      if (filterStatus !== 'All' && event.status !== filterStatus) {
+        return false;
+      }
+      
+      // Severity filter
+      if (filterSeverity !== 'All' && event.severity !== filterSeverity) {
+        return false;
+      }
+      
+      return true;
+    });
+  }, [events, searchQuery, filterStatus, filterSeverity]);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (!(e.target as Element).closest('.status-dropdown')) {
+        setShowStatusDropdown(false);
+      }
+      if (!(e.target as Element).closest('.severity-dropdown')) {
+        setShowSeverityDropdown(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
   const handleEventClick = useCallback((event: PowerEvent) => {
     onEventClick(event);
   }, [onEventClick]);
-  
+
   return (
     <div className="flex-1 bg-[#141C28] border border-[#273953] rounded-2xl overflow-hidden flex flex-col min-h-100">
       {/* Toolbar */}
@@ -52,21 +95,83 @@ export default function EventTable({ events, onEventClick }: EventTableProps) {
           <input
             type="text"
             placeholder="Search ID, location..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-transparent border-0 text-base text-white placeholder-gray-500 focus:outline-none"
           />
         </div>
-        <div className="flex gap-2">
-          <span className="bg-[#1F314F] text-sm px-4 py-2.5 rounded-full flex items-center gap-2 border border-[#3E5D88] font-medium cursor-pointer hover:bg-[#2A3E5A] transition-colors">
-            <span>Status</span>
-            <i className="fas fa-chevron-down text-xs"></i>
-          </span>
-          <span className="bg-[#1F314F] text-sm px-4 py-2.5 rounded-full hidden sm:flex items-center gap-2 border border-[#3E5D88] font-medium cursor-pointer hover:bg-[#2A3E5A] transition-colors">
-            <span>Severity</span>
-            <i className="fas fa-chevron-down text-xs"></i>
-          </span>
-          <span className="bg-[#1F314F] text-sm px-4 py-2.5 rounded-full flex items-center gap-2 border border-[#3E5D88] cursor-pointer hover:bg-[#2A3E5A] transition-colors">
+        <div className="flex gap-2 relative">
+          {/* Status Filter */}
+          <div className="relative status-dropdown">
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowStatusDropdown(!showStatusDropdown);
+                setShowSeverityDropdown(false);
+              }}
+              className="bg-[#1F314F] text-sm px-4 py-2.5 rounded-full flex items-center gap-2 border border-[#3E5D88] font-medium cursor-pointer hover:bg-[#2A3E5A] transition-colors"
+            >
+              <span>{filterStatus === 'All' ? 'Status' : filterStatus}</span>
+              <i className="fas fa-chevron-down text-xs"></i>
+            </button>
+            {showStatusDropdown && (
+              <div className="absolute top-full mt-2 left-0 bg-[#1F314F] border border-[#3E5D88] rounded-lg shadow-xl z-10 min-w-32 overflow-hidden">
+                {['All', 'Active', 'Investigating', 'Resolved'].map(status => (
+                  <button
+                    key={status}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setFilterStatus(status);
+                      setShowStatusDropdown(false);
+                    }}
+                    className={`w-full px-4 py-2 text-left text-sm hover:bg-[#2A3E5A] transition-colors ${
+                      filterStatus === status ? 'bg-[#2A3E5A] text-white' : 'text-gray-300'
+                    }`}
+                  >
+                    {status}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Severity Filter */}
+          <div className="relative severity-dropdown">
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowSeverityDropdown(!showSeverityDropdown);
+                setShowStatusDropdown(false);
+              }}
+              className="bg-[#1F314F] text-sm px-4 py-2.5 rounded-full flex items-center gap-2 border border-[#3E5D88] font-medium cursor-pointer hover:bg-[#2A3E5A] transition-colors hidden sm:flex"
+            >
+              <span>{filterSeverity === 'All' ? 'Severity' : filterSeverity}</span>
+              <i className="fas fa-chevron-down text-xs"></i>
+            </button>
+            {showSeverityDropdown && (
+              <div className="absolute top-full mt-2 left-0 bg-[#1F314F] border border-[#3E5D88] rounded-lg shadow-xl z-10 min-w-32 overflow-hidden">
+                {['All', 'Critical', 'Medium', 'Low'].map(severity => (
+                  <button
+                    key={severity}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setFilterSeverity(severity);
+                      setShowSeverityDropdown(false);
+                    }}
+                    className={`w-full px-4 py-2 text-left text-sm hover:bg-[#2A3E5A] transition-colors ${
+                      filterSeverity === severity ? 'bg-[#2A3E5A] text-white' : 'text-gray-300'
+                    }`}
+                  >
+                    {severity}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <button className="bg-[#1F314F] text-sm px-4 py-2.5 rounded-full flex items-center gap-2 border border-[#3E5D88] cursor-pointer hover:bg-[#2A3E5A] transition-colors">
             <i className="fas fa-calendar-alt text-base"></i>
-          </span>
+          </button>
         </div>
       </div>
 
@@ -84,26 +189,34 @@ export default function EventTable({ events, onEventClick }: EventTableProps) {
             </tr>
           </thead>
           <tbody className="divide-y divide-[#2D4567]">
-            {memoizedEvents.map((event) => (
-              <tr
-                key={event.id}
-                onClick={() => handleEventClick(event)}
-                className="hover:bg-[#1F3450] cursor-pointer transition-colors text-base"
-              >
-                <td className="px-4 py-4 font-mono text-[#B6D0F5] font-medium">{event.id}</td>
-                <td className="px-4 py-4">
-                  <span className={`text-xs px-3 py-1 rounded-full border font-semibold ${getBadgeClass(event.status)}`}>
-                    {event.status === 'Investigating' ? 'Invest.' : event.status}
-                  </span>
+            {filteredEvents.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+                  No events found
                 </td>
-                <td className={`px-4 py-4 hidden sm:table-cell ${getSeverityClass(event.severity)}`}>
-                  {event.severity}
-                </td>
-                <td className="px-4 py-4 text-gray-200">{event.location}</td>
-                <td className="px-4 py-4 hidden md:table-cell text-gray-300">{event.grid}</td>
-                <td className="px-4 py-4 font-mono text-gray-200">{event.duration}</td>
               </tr>
-            ))}
+            ) : (
+              filteredEvents.map((event) => (
+                <tr
+                  key={event.id}
+                  onClick={() => handleEventClick(event)}
+                  className="hover:bg-[#1F3450] cursor-pointer transition-colors text-base"
+                >
+                  <td className="px-4 py-4 font-mono text-[#B6D0F5] font-medium">{event.id}</td>
+                  <td className="px-4 py-4">
+                    <span className={`text-xs px-3 py-1 rounded-full border font-semibold ${getBadgeClass(event.status)}`}>
+                      {event.status === 'Investigating' ? 'Invest.' : event.status}
+                    </span>
+                  </td>
+                  <td className={`px-4 py-4 hidden sm:table-cell ${getSeverityClass(event.severity)}`}>
+                    {event.severity}
+                  </td>
+                  <td className="px-4 py-4 text-gray-200">{event.location}</td>
+                  <td className="px-4 py-4 hidden md:table-cell text-gray-300">{event.grid}</td>
+                  <td className="px-4 py-4 font-mono text-gray-200">{event.duration}</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -113,10 +226,10 @@ export default function EventTable({ events, onEventClick }: EventTableProps) {
         <div className="flex items-center gap-3">
           <i className="fas fa-circle text-emerald-700 text-[10px]"></i>
           <span className="text-base">live 32s</span>
-          <span className="bg-[#253D60] px-3 py-1 rounded-full text-sm font-medium">23 total</span>
+          <span className="bg-[#253D60] px-3 py-1 rounded-full text-sm font-medium">{filteredEvents.length} total</span>
         </div>
         <div>
-          <span className="text-base">1-6 of 18</span>
+          <span className="text-base">1-{filteredEvents.length} of {filteredEvents.length}</span>
           <i className="fas fa-chevron-left ml-4 mr-3 text-gray-500 text-lg cursor-pointer hover:text-gray-300"></i>
           <i className="fas fa-chevron-right text-gray-400 text-lg cursor-pointer hover:text-gray-300"></i>
         </div>
