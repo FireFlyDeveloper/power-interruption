@@ -24,12 +24,12 @@ export default function SettingsPage() {
   return (
     <ProtectedRoute>
       <div className="flex flex-col h-screen overflow-hidden bg-[#0C1119] text-gray-200 antialiased text-base">
-        <Header />
+      <Header />
+      
+      <div className="flex flex-1 overflow-hidden relative">
+        <Sidebar pathname="/settings" />
         
-        <div className="flex flex-1 overflow-hidden relative">
-          <Sidebar pathname="/settings" />
-          
-          <main className="flex-1 overflow-y-auto thin-scroll bg-[#0C1119] px-4 sm:px-6 pb-28 md:pb-6 relative">
+        <main className="flex-1 overflow-y-auto thin-scroll bg-[#0C1119] px-4 sm:px-6 pb-28 md:pb-6 relative">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-white">Settings</h1>
             <p className="text-gray-400 mt-1">Configure your dashboard preferences</p>
@@ -161,8 +161,8 @@ export default function SettingsPage() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm text-gray-400 mb-2">Display Name</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={isEditing ? displayName : (user?.displayName || '')}
                 onChange={(e) => setDisplayName(e.target.value)}
                 disabled={!isEditing}
@@ -171,8 +171,8 @@ export default function SettingsPage() {
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-2">Email</label>
-              <input 
-                type="email" 
+              <input
+                type="email"
                 value={isEditing ? email : (user?.email || '')}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={!isEditing}
@@ -223,47 +223,45 @@ export default function SettingsPage() {
   </div>
 
   <MobileNav />
-    </div>
 
-      {/* Password Change Modal */}
+  {/* Password Change Modal */}
+  {showPasswordModal && (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      {showPasswordModal && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#141C28] border border-[#273953] rounded-2xl p-6 w-full max-w-md">
-            <h2 className="text-xl font-semibold text-white mb-4">Change Password</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm text-gray-400 mb-2">New Password</label>
-                <input
-                  type="password"
-                  className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white"
-                  placeholder="Enter new password"
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-400 mb-2">Confirm Password</label>
-                <input
-                  type="password"
-                  className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white"
-                  placeholder="Confirm new password"
-                />
-              </div>
-            </div>
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setShowPasswordModal(false)}
-                className="flex-1 px-6 py-2 bg-[#3D4F5F] text-white rounded-lg font-medium hover:bg-[#4D5F6F] transition-colors"
-              >
-                Cancel
-              </button>
-              <button className="flex-1 px-6 py-2 bg-[#1E5F4A] text-white rounded-lg font-medium hover:bg-[#2A7A5F] transition-colors">
-                Save Password
-              </button>
-            </div>
+      <div className="bg-[#141C28] border border-[#273953] rounded-2xl p-6 w-full max-w-md">
+        <h2 className="text-xl font-semibold text-white mb-4">Change Password</h2>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">New Password</label>
+            <input
+              type="password"
+              className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white"
+              placeholder="Enter new password"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">Confirm Password</label>
+            <input
+              type="password"
+              className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white"
+              placeholder="Confirm new password"
+            />
           </div>
         </div>
-      )}
+        <div className="flex gap-3 mt-6">
+          <button
+            onClick={() => setShowPasswordModal(false)}
+            className="flex-1 px-6 py-2 bg-[#3D4F5F] text-white rounded-lg font-medium hover:bg-[#4D5F6F] transition-colors"
+          >
+            Cancel
+          </button>
+          <button className="flex-1 px-6 py-2 bg-[#1E5F4A] text-white rounded-lg font-medium hover:bg-[#2A7A5F] transition-colors">
+            Save Password
+          </button>
+        </div>
+      </div>
     </div>
-    </ProtectedRoute>
+  )}
+    </div>
+  </ProtectedRoute>
   );
 }
