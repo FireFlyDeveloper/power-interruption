@@ -9,7 +9,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
 
 export default function SettingsPage() {
-  const { user, logout, updateProfile } = useAuth();
+  const { user, logout, updateProfile, changePassword } = useAuth();
   const router = useRouter();
   const [notifications, setNotifications] = useState(true);
   const [emailAlerts, setEmailAlerts] = useState(false);
@@ -20,6 +20,12 @@ export default function SettingsPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [displayName, setDisplayName] = useState(user?.displayName || '');
   const [email, setEmail] = useState(user?.email || '');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   return (
     <ProtectedRoute>
@@ -199,7 +205,14 @@ export default function SettingsPage() {
                 {isEditing ? 'Save' : 'Edit'}
               </button>
               <button
-                onClick={() => setShowPasswordModal(true)}
+                onClick={() => {
+                  setShowPasswordModal(true);
+                  setPasswordError('');
+                  setPasswordSuccess(false);
+                  setCurrentPassword('');
+                  setNewPassword('');
+                  setConfirmPassword('');
+                }}
                 className="px-6 py-2 bg-[#1E5F4A] text-white rounded-lg font-medium hover:bg-[#2A7A5F] transition-colors"
               >
                 Change Password
@@ -229,11 +242,36 @@ export default function SettingsPage() {
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
       <div className="bg-[#141C28] border border-[#273953] rounded-2xl p-6 w-full max-w-md">
         <h2 className="text-xl font-semibold text-white mb-4">Change Password</h2>
+        
+        {passwordError && (
+          <div className="mb-4 p-3 bg-red-900/50 border border-red-500/50 text-red-200 rounded-lg text-sm">
+            {passwordError}
+          </div>
+        )}
+        
+        {passwordSuccess && (
+          <div className="mb-4 p-3 bg-green-900/50 border border-green-500/50 text-green-200 rounded-lg text-sm">
+            Password changed successfully!
+          </div>
+        )}
+
         <div className="space-y-4">
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">Current Password</label>
+            <input
+              type="password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white"
+              placeholder="Enter current password"
+            />
+          </div>
           <div>
             <label className="block text-sm text-gray-400 mb-2">New Password</label>
             <input
               type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
               className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white"
               placeholder="Enter new password"
             />
@@ -242,6 +280,8 @@ export default function SettingsPage() {
             <label className="block text-sm text-gray-400 mb-2">Confirm Password</label>
             <input
               type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white"
               placeholder="Confirm new password"
             />
@@ -252,11 +292,42 @@ export default function SettingsPage() {
             onClick={() => setShowPasswordModal(false)}
             className="flex-1 px-6 py-2 bg-[#3D4F5F] text-white rounded-lg font-medium hover:bg-[#4D5F6F] transition-colors"
           >
-            Cancel
+            Close
           </button>
-          <button className="flex-1 px-6 py-2 bg-[#1E5F4A] text-white rounded-lg font-medium hover:bg-[#2A7A5F] transition-colors">
-            Save Password
-          </button>
+          {!passwordSuccess && (
+            <button 
+              onClick={async () => {
+                setPasswordError('');
+                if (newPassword !== confirmPassword) {
+                  setPasswordError('New passwords do not match');
+                  return;
+                }
+                if (!currentPassword || !newPassword) {
+                  setPasswordError('Please fill in all fields');
+                  return;
+                }
+                setIsChangingPassword(true);
+                const success = await changePassword({
+                  currentPassword,
+                  newPassword,
+                  confirmPassword
+                });
+                setIsChangingPassword(false);
+                if (success) {
+                  setPasswordSuccess(true);
+                  setCurrentPassword('');
+                  setNewPassword('');
+                  setConfirmPassword('');
+                } else {
+                  setPasswordError('Failed to change password. Please check your current password.');
+                }
+              }}
+              disabled={isChangingPassword}
+              className="flex-1 px-6 py-2 bg-[#1E5F4A] text-white rounded-lg font-medium hover:bg-[#2A7A5F] transition-colors disabled:opacity-50"
+            >
+              {isChangingPassword ? 'Saving...' : 'Save Password'}
+            </button>
+          )}
         </div>
       </div>
     </div>

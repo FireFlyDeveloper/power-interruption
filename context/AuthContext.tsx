@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const loadSession = async () => {
       try {
-        const res = await fetch('http://localhost:4000/api/auth/me', {
+        const res = await fetch('/api/auth/me', {
           credentials: 'include'
         });
         if (res.ok) {
@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
 
     try {
-      const res = await fetch('http://localhost:4000/api/auth/login', {
+      const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentials),
@@ -83,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      await fetch('http://localhost:4000/api/auth/logout', { 
+      await fetch('/api/auth/logout', { 
         method: 'POST',
         credentials: 'include'
       });
@@ -96,8 +96,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // For this simple implementation, we omit the admin user management fetches 
   // and placeholder them to return false. They can be added as needed.
-  const changePassword = async (data: ChangePasswordData) => false;
-  const updateProfile = async (data: UpdateProfileData) => false;
+  const changePassword = async (data: ChangePasswordData) => {
+    setError(null);
+    try {
+      const res = await fetch('/api/auth/password', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword: data.currentPassword, newPassword: data.newPassword }),
+        credentials: 'include'
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        setError(errorData.error || 'Failed to change password');
+        return false;
+      }
+      return true;
+    } catch (err) {
+      console.error(err);
+      setError('An error occurred while changing password');
+      return false;
+    }
+  };
+  const updateProfile = async (data: UpdateProfileData) => {
+    setError(null);
+    try {
+      const res = await fetch('/api/auth/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+        credentials: 'include'
+      });
+      if (res.ok) {
+        const userData = await res.json();
+        setUser(userData);
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  };
   const createUser = async () => false;
   const updateUser = async () => false;
   const deleteUser = async () => false;
