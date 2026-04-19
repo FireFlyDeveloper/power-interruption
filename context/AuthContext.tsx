@@ -6,10 +6,12 @@ import { User, LoginCredentials, ChangePasswordData, UpdateProfileData } from '@
 interface AuthContextType {
   user: User | null;
   users: User[];
+  token: string | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
   isLoading: boolean;
   error: string | null;
+  getToken: () => string | null;
   login: (credentials: LoginCredentials) => Promise<boolean>;
   logout: () => Promise<void>;
   changePassword: (data: ChangePasswordData) => Promise<boolean>;
@@ -60,13 +62,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const res = await fetch('https://power-interruption-backend.onrender.com/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials),
-        credentials: 'include'
+        body: JSON.stringify(credentials)
       });
 
       if (res.ok) {
         const data = await res.json();
-        if (data.user) {
+        if (data.token && data.user) {
+          // Store JWT token
+          localStorage.setItem('token', data.token);
+          setUser(data.user);
+        } else if (data.user) {
+          // Handle case without token (for compatibility)
           setUser(data.user);
         } else {
           setUser(data);
@@ -85,6 +91,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const getToken = useCallback((): string | null => {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem('token');
+  }, []);
+
   const logout = useCallback(async () => {
     try {
       await fetch('https://power-interruption-backend.onrender.com/api/auth/logout', { 
@@ -94,6 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       console.error(err);
     } finally {
+      localStorage.removeItem('token');
       setUser(null);
     }
   }, []);
@@ -154,10 +166,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider value={{
       user,
       users,
+      token: getToken(),
       isAuthenticated: !!user,
       isAdmin: user?.role === 'admin',
       isLoading,
       error,
+      getToken,
       login,
       logout,
       changePassword,

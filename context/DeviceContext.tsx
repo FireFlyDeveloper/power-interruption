@@ -22,13 +22,23 @@ const DeviceContext = createContext<DeviceContextType | undefined>(undefined);
 export function DeviceProvider({ children }: { children: ReactNode }) {
   const [devices, setDevices] = useState<Device[]>([]);
   const [powerEvents, setPowerEvents] = useState<PowerEvent[]>([]);
-  const { isAuthenticated } = useAuth();
+  const { getToken, isAuthenticated } = useAuth();
+
+  const makeAuthHeaders = useCallback(() => {
+    const token = getToken();
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+  }, [getToken]);
 
   const fetchDevices = useCallback(async () => {
     if (!isAuthenticated) return;
     try {
       const res = await fetch('https://power-interruption-backend.onrender.com/api/devices', {
-        credentials: 'include'
+        credentials: 'include',
+        headers: makeAuthHeaders()
       });
       if (res.ok) {
         const data = await res.json();
@@ -37,13 +47,14 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
     } catch (e) {
       console.error(e);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, makeAuthHeaders]);
 
   const fetchEvents = useCallback(async () => {
     if (!isAuthenticated) return;
     try {
       const res = await fetch('https://power-interruption-backend.onrender.com/api/events', {
-        credentials: 'include'
+        credentials: 'include',
+        headers: makeAuthHeaders()
       });
       if (res.ok) {
         const data = await res.json();
@@ -52,7 +63,7 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
     } catch (e) {
       console.error(e);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, makeAuthHeaders]);
 
   useEffect(() => {
     fetchDevices();
