@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import Header from '@/components/Header';
 import Sidebar from '@/components/Sidebar';
 import MobileNav from '@/components/MobileNav';
@@ -9,11 +9,13 @@ import { PowerEvent } from '@/types';
 import DetailPanel from '@/components/DetailPanel';
 import { useDevices } from '@/context/DeviceContext';
 import { useAuth } from '@/context/AuthContext';
+import { useMetadata } from '@/context/MetadataContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
 export default function EventsPage() {
   const { powerEvents, addPowerEvent } = useDevices();
   const { isAdmin } = useAuth();
+  const { grids, metadata, loading } = useMetadata();
   const [selectedEvent, setSelectedEvent] = useState<PowerEvent | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -21,9 +23,21 @@ export default function EventsPage() {
   
   // Add Event form state
   const [location, setLocation] = useState('');
-  const [grid, setGrid] = useState('Balayan North');
+  const [grid, setGrid] = useState(grids[0] || 'Balayan North');
   const [severity, setSeverity] = useState<'Critical' | 'Medium' | 'Low'>('Medium');
   const [notes, setNotes] = useState('');
+
+  useEffect(() => {
+    if (grids.length > 0 && grid && !grids.includes(grid)) {
+      setGrid(grids[0]);
+    }
+  }, [grids, grid]);
+
+  useEffect(() => {
+    if (loading === false && grids.length > 0 && !grid) {
+      setGrid(grids[0]);
+    }
+  }, [loading, grids]);
 
   const handleEventClick = (event: PowerEvent) => {
     setSelectedEvent(event);
@@ -39,32 +53,34 @@ export default function EventsPage() {
     ? powerEvents 
     : powerEvents.filter(event => event.status.toLowerCase() === statusFilter);
 
+  const getGridCoords = (selectedGrid: string): { lat: number; lng: number } | null => {
+    if (!selectedGrid) return null;
+    return null;
+  };
+
   const handleAddEvent = (e: FormEvent) => {
     e.preventDefault();
     
-    // Get default coordinates based on grid selection
-    const gridCoords: Record<string, { lat: number; lng: number }> = {
-      'Balayan North': { lat: 13.9432, lng: 120.7389 },
-      'Balayan Central': { lat: 13.9375, lng: 120.7256 },
-      'Balayan South': { lat: 13.9289, lng: 120.7412 },
-      'Balayan East': { lat: 13.9456, lng: 120.7501 },
-    };
-    
-    const coords = gridCoords[grid] || gridCoords['Balayan North'];
+    const coords = getGridCoords(grid);
+    if (!coords) return;
     
     addPowerEvent({
       location: location || grid,
       grid,
       severity,
-      lat: coords.lat,
-      lng: coords.lng,
+      lat: coords?.lat ?? 13.9394,
+      lng: coords?.lng ?? 120.7336,
       notes: notes || undefined,
       affectedCustomers: undefined,
+      deviceId: '',
+      title: `${severity} Power Event`,
+      description: notes || `Power interruption in ${grid}`,
+      startTime: new Date().toISOString(),
     });
     
     // Reset form and close modal
     setLocation('');
-    setGrid('Balayan North');
+    setGrid(grids[0] || 'Balayan North');
     setSeverity('Medium');
     setNotes('');
     setShowAddModal(false);
@@ -187,10 +203,9 @@ export default function EventsPage() {
                     onChange={(e) => setGrid(e.target.value)}
                     className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white"
                   >
-                    <option>Balayan North</option>
-                    <option>Balayan Central</option>
-                    <option>Balayan South</option>
-                    <option>Balayan East</option>
+                    {grids.map((g) => (
+                      <option key={g} value={g}>{g}</option>
+                    ))}
                   </select>
                 </div>
                 <div>

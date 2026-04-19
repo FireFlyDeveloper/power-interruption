@@ -1,7 +1,6 @@
 'use client';
 
-import { PowerEvent, EventTimeline } from '@/types';
-import { getEventTimeline } from '@/data/events';
+import { PowerEvent, EventTimeline, getEventTimeline } from '@/types';
 import { useDevices } from '@/context/DeviceContext';
 
 interface DetailPanelProps {
@@ -153,7 +152,7 @@ export default function DetailPanel({ event, isOpen, onClose }: DetailPanelProps
                 <li key={index} className="flex items-center">
                   <i className={`far fa-circle mr-3 ${getTimelineIconClass(item.status)}`}></i>
                   <span className={item.status === 'pending' ? 'text-gray-500' : 'text-gray-200'}>
-                    {item.time} {item.action}
+                    {item.time} {item.description}
                   </span>
                 </li>
               ))}

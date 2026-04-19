@@ -12,10 +12,10 @@ interface DeviceContextType {
   removeDevice: (id: string) => Promise<void>;
   updateDevice: (id: string, updates: Partial<Device>) => Promise<void>;
   getDevice: (id: string) => Device | undefined;
-  reportPowerOutage: (deviceId: string, severity: 'Critical' | 'Medium' | 'Low') => Promise<void>;
+  reportPowerOutage: (deviceId: string, severity: string) => Promise<void>;
   resolvePowerOutage: (eventId: string) => Promise<void>;
-  addPowerEvent: (event: Omit<PowerEvent, 'id' | 'status' | 'start' | 'duration'>) => Promise<void>;
-  updateEventStatus: (eventId: string, status: 'Active' | 'Investigating' | 'Resolved') => Promise<void>;
+  addPowerEvent: (event: import('./services/eventService').EventCreateInput) => Promise<void>;
+  updateEventStatus: (eventId: string, status: string) => Promise<void>;
 }
 
 const DeviceContext = createContext<DeviceContextType | undefined>(undefined);
@@ -78,7 +78,7 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
     return devices.find(d => d.id === id);
   }, [devices]);
 
-  const reportPowerOutage = useCallback(async (deviceId: string, severity: 'Critical' | 'Medium' | 'Low') => {
+  const reportPowerOutage = useCallback(async (deviceId: string, severity: string) => {
     const device = devices.find(d => d.id === deviceId);
     if (!device) return;
 
@@ -87,8 +87,8 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
         severity,
         location: device.grid,
         grid: device.grid,
-        lat: device.lat,
-        lng: device.lng,
+        lat: device.lat ?? 13.9394,
+        lng: device.lng ?? 120.7336,
       });
       await fetchEvents();
     } catch (e) {
@@ -105,7 +105,7 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
     }
   }, [fetchEvents]);
 
-  const addPowerEvent = useCallback(async (eventData: Omit<PowerEvent, 'id' | 'status' | 'start' | 'duration'>) => {
+  const addPowerEvent = useCallback(async (eventData: import('./services/eventService').EventCreateInput) => {
     try {
       await eventService.create(eventData);
       await fetchEvents();
@@ -114,7 +114,7 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
     }
   }, [fetchEvents]);
 
-  const updateEventStatus = useCallback(async (eventId: string, status: 'Active' | 'Investigating' | 'Resolved') => {
+  const updateEventStatus = useCallback(async (eventId: string, status: string) => {
     try {
       await eventService.updateStatus(eventId, status);
       await fetchEvents();

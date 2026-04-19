@@ -1,6 +1,21 @@
 import { apiClient } from '../lib/apiClient';
 import { PowerEvent } from '@/types/index';
 
+export interface EventCreateInput {
+  deviceId?: string;
+  title: string;
+  description: string;
+  severity: string;
+  grid: string;
+  location: string;
+  startTime: string;
+  lat: number;
+  lng: number;
+  notes?: string;
+  affectedCustomers?: number;
+  endTime?: string;
+}
+
 export const eventService = {
   async getAll(): Promise<PowerEvent[]> {
     return apiClient('/api/events');
@@ -10,14 +25,14 @@ export const eventService = {
     return apiClient(`/api/events/${id}`);
   },
 
-  async create(event: Omit<PowerEvent, 'id' | 'status' | 'start' | 'duration'>): Promise<PowerEvent> {
+  async create(event: EventCreateInput): Promise<PowerEvent> {
     return apiClient('/api/events', {
       method: 'POST',
       body: JSON.stringify(event),
     });
   },
 
-  async updateStatus(id: string, status: 'Active' | 'Investigating' | 'Resolved', duration?: string): Promise<PowerEvent> {
+  async updateStatus(id: string, status: string, duration?: string): Promise<PowerEvent> {
     return apiClient(`/api/events/${id}`, {
       method: 'PUT',
       body: JSON.stringify({ status, duration }),

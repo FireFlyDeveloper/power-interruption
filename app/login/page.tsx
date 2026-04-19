@@ -3,10 +3,12 @@
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { useMetadata } from '@/context/MetadataContext';
 
 export default function LoginPage() {
   const router = useRouter();
   const { login, isLoading, error, clearError } = useAuth();
+  const { metadata, loading: metadataLoading } = useMetadata();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [localError, setLocalError] = useState('');
@@ -35,8 +37,12 @@ export default function LoginPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-600 mb-4">
             <i className="fas fa-bolt text-white text-2xl"></i>
           </div>
-          <h1 className="text-3xl font-bold text-white">Power Monitor</h1>
-          <p className="text-gray-400 mt-2">Balayan, Batangas Grid System</p>
+          <h1 className="text-3xl font-bold text-white">
+            {metadataLoading ? 'Power Monitor' : (metadata?.siteName || 'Power Monitor')}
+          </h1>
+          <p className="text-gray-400 mt-2">
+            {metadataLoading ? 'Balayan, Batangas Grid System' : (metadata?.location ? `${metadata.location} Grid System` : 'Balayan, Batangas Grid System')}
+          </p>
         </div>
 
         {/* Login Card */}

@@ -1,15 +1,17 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { useDevices } from '@/context/DeviceContext';
 import { useAuth } from '@/context/AuthContext';
+import { useMetadata } from '@/context/MetadataContext';
 import { Device } from '@/types';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
 export default function DevicesPage() {
   const { devices, addDevice, removeDevice, reportPowerOutage, updateDevice } = useDevices();
   const { isAdmin } = useAuth();
+  const { grids } = useMetadata();
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
@@ -22,8 +24,15 @@ export default function DevicesPage() {
 
   // Form state
   const [deviceName, setDeviceName] = useState('');
-  const [deviceGrid, setDeviceGrid] = useState('Balayan North');
+  const [deviceGrid, setDeviceGrid] = useState(grids[0] || 'Balayan North');
   const [deviceStatus, setDeviceStatus] = useState<'online' | 'offline'>('online');
+
+  // Update grid default when metadata loads
+  useEffect(() => {
+    if (grids.length > 0 && !grids.includes(deviceGrid)) {
+      setDeviceGrid(grids[0]);
+    }
+  }, [grids, deviceGrid]);
 
   const handleAddDevice = useCallback(() => {
     if (!deviceName.trim()) return;
@@ -41,7 +50,7 @@ export default function DevicesPage() {
             signalStrength: 5,
           });
           setDeviceName('');
-          setDeviceGrid('Balayan North');
+          setDeviceGrid(grids[0] || 'Balayan North');
           setDeviceStatus('online');
           setShowAddModal(false);
         },
@@ -57,7 +66,7 @@ export default function DevicesPage() {
             signalStrength: 5,
           });
           setDeviceName('');
-          setDeviceGrid('Balayan North');
+          setDeviceGrid(grids[0] || 'Balayan North');
           setDeviceStatus('online');
           setShowAddModal(false);
         }
@@ -73,11 +82,11 @@ export default function DevicesPage() {
         signalStrength: 5,
       });
       setDeviceName('');
-      setDeviceGrid('Balayan North');
+      setDeviceGrid(grids[0] || 'Balayan North');
       setDeviceStatus('online');
       setShowAddModal(false);
     }
-  }, [deviceName, deviceGrid, deviceStatus, addDevice]);
+  }, [deviceName, deviceGrid, deviceStatus, addDevice, grids]);
 
   const handleDeleteDevice = useCallback((id: string) => {
     removeDevice(id);
@@ -89,7 +98,7 @@ export default function DevicesPage() {
     if (!selectedDevice) return;
     setEditName(selectedDevice.name);
     setEditGrid(selectedDevice.grid);
-    setEditStatus(selectedDevice.status);
+    setEditStatus(selectedDevice.status as 'online' | 'offline');
     setIsEditing(true);
   }, [selectedDevice]);
 
@@ -223,11 +232,9 @@ export default function DevicesPage() {
                   onChange={(e) => setDeviceGrid(e.target.value)}
                   className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#5A8BC9]"
                 >
-                  <option>Balayan North</option>
-                  <option>Balayan Central</option>
-                  <option>Balayan South</option>
-                  <option>Balayan East</option>
-                  <option>Balayan West</option>
+                  {grids.map((g) => (
+                    <option key={g} value={g}>{g}</option>
+                  ))}
                 </select>
               </div>
 
@@ -333,7 +340,7 @@ export default function DevicesPage() {
               <div className="py-2">
                 <span className="text-gray-400">Location</span>
                 <p className="text-white mt-1 text-sm">
-                  {selectedDevice.lat.toFixed(6)}, {selectedDevice.lng.toFixed(6)}
+                  {selectedDevice.lat?.toFixed(6) ?? 'N/A'}, {selectedDevice.lng?.toFixed(6) ?? 'N/A'}
                 </p>
               </div>
             </div>
@@ -421,11 +428,9 @@ export default function DevicesPage() {
                   onChange={(e) => setEditGrid(e.target.value)}
                   className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#5A8BC9]"
                 >
-                  <option>Balayan North</option>
-                  <option>Balayan Central</option>
-                  <option>Balayan South</option>
-                  <option>Balayan East</option>
-                  <option>Balayan West</option>
+                  {grids.map((g) => (
+                    <option key={g} value={g}>{g}</option>
+                  ))}
                 </select>
               </div>
 
