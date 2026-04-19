@@ -1,8 +1,9 @@
 'use client';
 
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
-import { Device, PowerEvent } from '@/types';
-import { useAuth } from './AuthContext';
+import { Device, PowerEvent } from '@/types/index';
+import { deviceService } from './services/deviceService';
+import { eventService } from './services/eventService';
 
 interface DeviceContextType {
   devices: Device[];
@@ -22,48 +23,24 @@ const DeviceContext = createContext<DeviceContextType | undefined>(undefined);
 export function DeviceProvider({ children }: { children: ReactNode }) {
   const [devices, setDevices] = useState<Device[]>([]);
   const [powerEvents, setPowerEvents] = useState<PowerEvent[]>([]);
-  const { getToken, isAuthenticated } = useAuth();
-
-  const makeAuthHeaders = useCallback(() => {
-    const token = getToken();
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    return headers;
-  }, [getToken]);
 
   const fetchDevices = useCallback(async () => {
-    if (!isAuthenticated) return;
     try {
-      const res = await fetch('https://power-interruption-backend.onrender.com/api/devices', {
-        credentials: 'include',
-        headers: makeAuthHeaders()
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setDevices(data);
-      }
+      const data = await deviceService.getAll();
+      setDevices(data);
     } catch (e) {
       console.error(e);
     }
-  }, [isAuthenticated, makeAuthHeaders]);
+  }, []);
 
   const fetchEvents = useCallback(async () => {
-    if (!isAuthenticated) return;
     try {
-      const res = await fetch('https://power-interruption-backend.onrender.com/api/events', {
-        credentials: 'include',
-        headers: makeAuthHeaders()
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setPowerEvents(data);
-      }
+      const data = await eventService.getAll();
+      setPowerEvents(data);
     } catch (e) {
       console.error(e);
     }
-  }, [isAuthenticated, makeAuthHeaders]);
+  }, []);
 
   useEffect(() => {
     fetchDevices();
@@ -72,15 +49,8 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
 
   const addDevice = useCallback(async (deviceData: Omit<Device, 'id' | 'lastSeen'>) => {
     try {
-      const res = await fetch('https://power-interruption-backend.onrender.com/api/devices', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(deviceData),
-        credentials: 'include'
-      });
-      if (res.ok) {
-        await fetchDevices();
-      }
+      await deviceService.create(deviceData);
+      await fetchDevices();
     } catch (e) {
       console.error(e);
     }
@@ -88,13 +58,8 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
 
   const removeDevice = useCallback(async (id: string) => {
     try {
-      const res = await fetch(`https://power-interruption-backend.onrender.com/api/devices/${id}`, { 
-        method: 'DELETE',
-        credentials: 'include'
-      });
-      if (res.ok) {
-        await fetchDevices();
-      }
+      await deviceService.delete(id);
+      await fetchDevices();
     } catch (e) {
       console.error(e);
     }
@@ -102,15 +67,8 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
 
   const updateDevice = useCallback(async (id: string, updates: Partial<Device>) => {
     try {
-      const res = await fetch(`https://power-interruption-backend.onrender.com/api/devices/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates),
-        credentials: 'include'
-      });
-      if (res.ok) {
-        await fetchDevices();
-      }
+      await deviceService.update(id, updates);
+      await fetchDevices();
     } catch (e) {
       console.error(e);
     }
@@ -125,23 +83,14 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
     if (!device) return;
 
     try {
-      const res = await fetch('https://power-interruption-backend.onrender.com/api/events', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: `EVT-${deviceId.replace('DEV-', '')}-${Date.now()}`,
-          severity,
-          location: device.grid,
-          grid: device.grid,
-          lat: device.lat,
-          lng: device.lng,
-          status: 'Active',
-        }),
-        credentials: 'include'
+      await eventService.create({
+        severity,
+        location: device.grid,
+        grid: device.grid,
+        lat: device.lat,
+        lng: device.lng,
       });
-      if (res.ok) {
-        await fetchEvents();
-      }
+      await fetchEvents();
     } catch (e) {
       console.error(e);
     }
@@ -149,15 +98,8 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
 
   const resolvePowerOutage = useCallback(async (eventId: string) => {
     try {
-      const res = await fetch(`https://power-interruption-backend.onrender.com/api/events/${eventId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'Resolved', duration: 'Resolved' }),
-        credentials: 'include'
-      });
-      if (res.ok) {
-        await fetchEvents();
-      }
+      await eventService.resolve(eventId);
+      await fetchEvents();
     } catch (e) {
       console.error(e);
     }
@@ -165,15 +107,8 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
 
   const addPowerEvent = useCallback(async (eventData: Omit<PowerEvent, 'id' | 'status' | 'start' | 'duration'>) => {
     try {
-      const res = await fetch('https://power-interruption-backend.onrender.com/api/events', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(eventData),
-        credentials: 'include'
-      });
-      if (res.ok) {
-        await fetchEvents();
-      }
+      await eventService.create(eventData);
+      await fetchEvents();
     } catch (e) {
       console.error(e);
     }
@@ -181,15 +116,8 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
 
   const updateEventStatus = useCallback(async (eventId: string, status: 'Active' | 'Investigating' | 'Resolved') => {
     try {
-      const res = await fetch(`https://power-interruption-backend.onrender.com/api/events/${eventId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, duration: status === 'Resolved' ? 'Resolved' : undefined }),
-        credentials: 'include'
-      });
-      if (res.ok) {
-        await fetchEvents();
-      }
+      await eventService.updateStatus(eventId, status);
+      await fetchEvents();
     } catch (e) {
       console.error(e);
     }

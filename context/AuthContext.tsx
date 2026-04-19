@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { User, LoginCredentials, ChangePasswordData, UpdateProfileData } from '@/types/auth';
+import { authService } from './services/authService';
 
 interface AuthContextType {
   user: User | null;
@@ -34,15 +35,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const loadSession = async () => {
       try {
-        const res = await fetch('https://power-interruption-backend.onrender.com/api/auth/me', {
-          credentials: 'include'
-        });
-        if (res.ok) {
-          const userData = await res.json();
-          setUser(userData);
-        } else {
-          setUser(null);
-        }
+        const userData = await authService.getCurrentUser();
+        setUser(userData);
       } catch (err) {
         console.error('Failed to load session:', err);
         setUser(null);
@@ -59,32 +53,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
 
     try {
-      const res = await fetch('https://power-interruption-backend.onrender.com/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials)
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (data.token && data.user) {
-          // Store JWT token
-          localStorage.setItem('token', data.token);
-          setUser(data.user);
-        } else if (data.user) {
-          // Handle case without token (for compatibility)
-          setUser(data.user);
-        } else {
-          setUser(data);
-        }
-        return true;
+      const data = await authService.login(credentials);
+      if (data.token && data.user) {
+        localStorage.setItem('token', data.token);
+        setUser(data.user);
+      } else if (data.user) {
+        setUser(data.user);
       } else {
-        const data = await res.json();
-        setError(data.error || 'Login failed');
-        return false;
+        setUser(data);
       }
-    } catch (err) {
-      setError('An error occurred during login');
+      return true;
+    } catch (err: any) {
+      setError(err.message || 'Login failed');
       return false;
     } finally {
       setIsLoading(false);
@@ -98,10 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      await fetch('https://power-interruption-backend.onrender.com/api/auth/logout', { 
-        method: 'POST',
-        credentials: 'include'
-      });
+      await authService.logout();
     } catch (err) {
       console.error(err);
     } finally {
@@ -115,41 +92,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const changePassword = async (data: ChangePasswordData) => {
     setError(null);
     try {
-      const res = await fetch('https://power-interruption-backend.onrender.com/api/auth/password', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ currentPassword: data.currentPassword, newPassword: data.newPassword }),
-        credentials: 'include'
-      });
-      if (!res.ok) {
-        const errorData = await res.json();
-        setError(errorData.error || 'Failed to change password');
-        return false;
-      }
+      await authService.changePassword(data);
       return true;
-    } catch (err) {
-      console.error(err);
-      setError('An error occurred while changing password');
+    } catch (err: any) {
+      setError(err.message || 'Failed to change password');
       return false;
     }
   };
   const updateProfile = async (data: UpdateProfileData) => {
     setError(null);
     try {
-      const res = await fetch('https://power-interruption-backend.onrender.com/api/auth/profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-        credentials: 'include'
-      });
-      if (res.ok) {
-        const userData = await res.json();
-        setUser(userData);
-        return true;
-      }
-      return false;
-    } catch (err) {
-      console.error(err);
+      const userData = await authService.updateProfile(data);
+      setUser(userData);
+      return true;
+    } catch (err: any) {
+      setError(err.message || 'Failed to update profile');
       return false;
     }
   };
