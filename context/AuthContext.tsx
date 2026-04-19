@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const loadSession = async () => {
       try {
-        const res = await fetch('/api/auth/me', {
+        const res = await fetch('/backend-api/auth/me', {
           credentials: 'include'
         });
         if (res.ok) {
@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
 
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch('/backend-api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentials),
@@ -65,8 +65,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       if (res.ok) {
-        const userData = await res.json();
-        setUser(userData);
+        const data = await res.json();
+        if (data.user) {
+          setUser(data.user);
+        } else {
+          setUser(data);
+        }
         return true;
       } else {
         const data = await res.json();
@@ -83,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      await fetch('/api/auth/logout', { 
+      await fetch('/backend-api/auth/logout', { 
         method: 'POST',
         credentials: 'include'
       });
@@ -99,7 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const changePassword = async (data: ChangePasswordData) => {
     setError(null);
     try {
-      const res = await fetch('/api/auth/password', {
+      const res = await fetch('/backend-api/auth/password', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ currentPassword: data.currentPassword, newPassword: data.newPassword }),
@@ -120,7 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const updateProfile = async (data: UpdateProfileData) => {
     setError(null);
     try {
-      const res = await fetch('/api/auth/profile', {
+      const res = await fetch('/backend-api/auth/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
