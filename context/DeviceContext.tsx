@@ -27,7 +27,7 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
   const fetchDevices = useCallback(async () => {
     if (!isAuthenticated) return;
     try {
-      const res = await fetch('/backend-api/devices', {
+      const res = await fetch('https://power-interruption-backend.onrender.com/api/devices', {
         credentials: 'include'
       });
       if (res.ok) {
@@ -42,7 +42,7 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
   const fetchEvents = useCallback(async () => {
     if (!isAuthenticated) return;
     try {
-      const res = await fetch('/backend-api/events', {
+      const res = await fetch('https://power-interruption-backend.onrender.com/api/events', {
         credentials: 'include'
       });
       if (res.ok) {
@@ -61,7 +61,7 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
 
   const addDevice = useCallback(async (deviceData: Omit<Device, 'id' | 'lastSeen'>) => {
     try {
-      const res = await fetch('/backend-api/devices', {
+      const res = await fetch('https://power-interruption-backend.onrender.com/api/devices', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(deviceData),
@@ -77,7 +77,7 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
 
   const removeDevice = useCallback(async (id: string) => {
     try {
-      const res = await fetch(`/backend-api/devices/${id}`, { 
+      const res = await fetch(`https://power-interruption-backend.onrender.com/api/devices/${id}`, { 
         method: 'DELETE',
         credentials: 'include'
       });
@@ -91,7 +91,7 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
 
   const updateDevice = useCallback(async (id: string, updates: Partial<Device>) => {
     try {
-      const res = await fetch(`/backend-api/devices/${id}`, {
+      const res = await fetch(`https://power-interruption-backend.onrender.com/api/devices/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
@@ -114,7 +114,7 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
     if (!device) return;
 
     try {
-      const res = await fetch('/backend-api/events', {
+      const res = await fetch('https://power-interruption-backend.onrender.com/api/events', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -138,7 +138,7 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
 
   const resolvePowerOutage = useCallback(async (eventId: string) => {
     try {
-      const res = await fetch(`/backend-api/events/${eventId}`, {
+      const res = await fetch(`https://power-interruption-backend.onrender.com/api/events/${eventId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'Resolved', duration: 'Resolved' }),
@@ -154,7 +154,7 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
 
   const addPowerEvent = useCallback(async (eventData: Omit<PowerEvent, 'id' | 'status' | 'start' | 'duration'>) => {
     try {
-      const res = await fetch('/backend-api/events', {
+      const res = await fetch('https://power-interruption-backend.onrender.com/api/events', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(eventData),
@@ -170,7 +170,7 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
 
   const updateEventStatus = useCallback(async (eventId: string, status: 'Active' | 'Investigating' | 'Resolved') => {
     try {
-      const res = await fetch(`/backend-api/events/${eventId}`, {
+      const res = await fetch(`https://power-interruption-backend.onrender.com/api/events/${eventId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status, duration: status === 'Resolved' ? 'Resolved' : undefined }),
