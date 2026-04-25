@@ -51,7 +51,7 @@ export default function SettingsPage() {
               <button
                 onClick={() => updateSetting('notifications', !settings.notifications)}
                 className={`w-12 h-6 rounded-full transition-colors ${
-                  settings.notifications ? 'bg-[#1E5F4A]' : 'bg-[#3D4F5F]'
+                  settings.notifications ? 'bg-[#22A06B]' : 'bg-[#556E85]'
                 }`}
               >
                 <div className={`w-5 h-5 rounded-full bg-white transition-transform ${
@@ -67,7 +67,7 @@ export default function SettingsPage() {
               <button
                 onClick={() => updateSetting('emailAlerts', !settings.emailAlerts)}
                 className={`w-12 h-6 rounded-full transition-colors ${
-                  settings.emailAlerts ? 'bg-[#1E5F4A]' : 'bg-[#3D4F5F]'
+                  settings.emailAlerts ? 'bg-[#22A06B]' : 'bg-[#556E85]'
                 }`}
               >
                 <div className={`w-5 h-5 rounded-full bg-white transition-transform ${
@@ -90,7 +90,7 @@ export default function SettingsPage() {
               <button
                 onClick={() => updateSetting('darkMode', !settings.darkMode)}
                 className={`w-12 h-6 rounded-full transition-colors ${
-                  settings.darkMode ? 'bg-[#1E5F4A]' : 'bg-[#3D4F5F]'
+                  settings.darkMode ? 'bg-[#22A06B]' : 'bg-[#556E85]'
                 }`}
               >
                 <div className={`w-5 h-5 rounded-full bg-white transition-transform ${
@@ -106,7 +106,7 @@ export default function SettingsPage() {
               <button
                 onClick={() => updateSetting('autoRefresh', !settings.autoRefresh)}
                 className={`w-12 h-6 rounded-full transition-colors ${
-                  settings.autoRefresh ? 'bg-[#1E5F4A]' : 'bg-[#3D4F5F]'
+                  settings.autoRefresh ? 'bg-[#22A06B]' : 'bg-[#556E85]'
                 }`}
               >
                 <div className={`w-5 h-5 rounded-full bg-white transition-transform ${

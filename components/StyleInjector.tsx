@@ -48,9 +48,11 @@ export default function StyleInjector() {
       'html.light [class*="#2A3E5A"] { background-color: #d1d5db !important; }',
       'html.light [class*="#1a2234"] { background-color: #ffffff !important; }',
       'html.light [class*="#3D4F5F"] { background-color: #e2e8f0 !important; }',
+      'html.light [class*="#556E85"] { background-color: #cbd5e1 !important; }',
 
       // Status/action button backgrounds
       'html.light [class*="#1E5F4A"] { background-color: #f0fdf4 !important; }',
+      'html.light [class*="#22A06B"] { background-color: #bbf7d0 !important; }',
       'html.light [class*="#4A2E2E"] { background-color: #fef2f2 !important; }',
       'html.light [class*="#4A4024"] { background-color: #fffbeb !important; }',
       'html.light [class*="#1F4733"] { background-color: #f0fdf4 !important; }',
