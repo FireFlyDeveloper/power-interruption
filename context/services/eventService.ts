@@ -39,10 +39,19 @@ export const eventService = {
     });
   },
 
-  async resolve(id: string): Promise<PowerEvent> {
+  async resolve(id: string, startTime?: string): Promise<PowerEvent> {
+    let duration: string | undefined = undefined;
+    if (startTime) {
+      const start = new Date(startTime).getTime();
+      const now = Date.now();
+      const diffMs = now - start;
+      const hours = Math.floor(diffMs / 3600000);
+      const minutes = Math.floor((diffMs % 3600000) / 60000);
+      duration = `${hours}h ${minutes}m`;
+    }
     return apiClient(`/api/events/${id}`, {
       method: 'PUT',
-      body: JSON.stringify({ status: 'Resolved', duration: 'Resolved' }),
+      body: JSON.stringify({ status: 'Resolved', duration }),
     });
   },
 };

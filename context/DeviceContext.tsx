@@ -13,7 +13,7 @@ interface DeviceContextType {
   updateDevice: (id: string, updates: Partial<Device>) => Promise<void>;
   getDevice: (id: string) => Device | undefined;
   reportPowerOutage: (deviceId: string, severity: string) => Promise<void>;
-  resolvePowerOutage: (eventId: string) => Promise<void>;
+  resolvePowerOutage: (eventId: string, startTime?: string) => Promise<void>;
   addPowerEvent: (event: import('./services/eventService').EventCreateInput) => Promise<void>;
   updateEventStatus: (eventId: string, status: string) => Promise<void>;
 }
@@ -96,9 +96,9 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
     }
   }, [devices, fetchEvents]);
 
-  const resolvePowerOutage = useCallback(async (eventId: string) => {
+  const resolvePowerOutage = useCallback(async (eventId: string, startTime?: string) => {
     try {
-      await eventService.resolve(eventId);
+      await eventService.resolve(eventId, startTime);
       await fetchEvents();
     } catch (e) {
       console.error(e);
