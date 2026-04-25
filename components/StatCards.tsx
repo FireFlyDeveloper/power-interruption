@@ -18,7 +18,6 @@ export default function StatCards() {
 
     const activeCount = dashboardStats.activeCount;
     const criticalCount = dashboardStats.criticalCount;
-    const mediumCount = activeCount - criticalCount;
     const avgDuration = dashboardStats.avgDuration;
     const resolvedWithDurationCount = dashboardStats.resolvedWithDurationCount;
 
@@ -27,7 +26,7 @@ export default function StatCards() {
         label: 'Active',
         icon: 'fa-bolt',
         value: String(activeCount),
-        subtext: `${criticalCount} critical · ${Math.max(0, mediumCount)} medium`,
+        subtext: `${criticalCount} critical`,
         badge: null as string | null,
         badgeColor: '',
         unit: undefined as string | undefined,
