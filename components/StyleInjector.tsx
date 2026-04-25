@@ -77,12 +77,13 @@ export default function StyleInjector() {
       'html.light [class*="#479A6E"] { border-color: #86efac !important; }',
 
       // ██████ TEXT COLORS ██████
-      // Standard Tailwind text classes
-      'html.light [class*="text-white"] { color: #1e293b !important; }',
-      'html.light [class*="text-gray-300"] { color: #334155 !important; }',
-      'html.light [class*="text-gray-400"] { color: #475569 !important; }',
+      // Standard Tailwind text classes — dark shades for white bg readability
+      'html.light [class*="text-white"] { color: #0f172a !important; }',
+      'html.light [class*="text-gray-200"] { color: #1e293b !important; }',
+      'html.light [class*="text-gray-300"] { color: #1e293b !important; }',
+      'html.light [class*="text-gray-400"] { color: #334155 !important; }',
       'html.light [class*="text-gray-500"] { color: #64748b !important; }',
-      'html.light [class*="text-gray-600"] { color: #e2e8f0 !important; }',
+      'html.light [class*="text-gray-600"] { color: #94a3b8 !important; }',
       'html.light [class*="text-green-400"] { color: #16a34a !important; }',
       'html.light [class*="text-red-400"] { color: #dc2626 !important; }',
 
