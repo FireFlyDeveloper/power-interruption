@@ -9,6 +9,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
 import { useAppSettings } from '@/context/AppSettingsContext';
 import { notificationService } from '@/context/services/notificationService';
+import { usePushNotifications } from '@/context/hooks/usePushNotifications';
 
 export default function SettingsPage() {
   const { user, logout, updateProfile, changePassword } = useAuth();
@@ -26,21 +27,64 @@ export default function SettingsPage() {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [emailAlertsEnabled, setEmailAlertsEnabled] = useState(false);
   const [loadingEmail, setLoadingEmail] = useState(true);
+  const [pushBackendEnabled, setPushBackendEnabled] = useState(false);
+  const [loadingPushBackend, setLoadingPushBackend] = useState(true);
 
-  // Load email notification preferences
+  const {
+    subscribed: pushSubscribed,
+    isSupported: pushSupported,
+    permissionState,
+    subscribe: pushSubscribe,
+    unsubscribe: pushUnsubscribe,
+    loading: pushLoading,
+    error: pushError,
+  } = usePushNotifications();
+
+  // Load email notification preferences from backend
   useEffect(() => {
     const loadSettings = async () => {
       try {
         const settings = await notificationService.getSettings();
         setEmailAlertsEnabled(settings.emailAlerts);
+        setPushBackendEnabled(settings.pushEnabled);
       } catch (err) {
         console.error('Failed to load notification settings:', err);
       } finally {
         setLoadingEmail(false);
+        setLoadingPushBackend(false);
       }
     };
     loadSettings();
   }, []);
+
+  const handlePushToggle = async () => {
+    const currentlyEnabled = pushBackendEnabled;
+
+    if (!currentlyEnabled) {
+      // Enabling — subscribe browser first, then update backend
+      const subResult = await pushSubscribe();
+      if (!subResult) return;
+
+      try {
+        await notificationService.updateSettings(undefined, true);
+        setPushBackendEnabled(true);
+      } catch (err) {
+        console.error('Failed to enable push backend setting:', err);
+        setPushBackendEnabled(false);
+        await pushUnsubscribe();
+      }
+    } else {
+      // Disabling — update backend first, then unsubscribe browser
+      try {
+        await notificationService.updateSettings(undefined, false);
+        setPushBackendEnabled(false);
+      } catch (err) {
+        console.error('Failed to disable push backend setting:', err);
+        return;
+      }
+      await pushUnsubscribe();
+    }
+  };
 
   return (
     <ProtectedRoute>
@@ -64,18 +108,33 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-white font-medium">Push Notifications</p>
-                <p className="text-sm text-gray-400">Receive alerts for new incidents</p>
+                <p className="text-sm text-gray-400">
+                  {pushSupported
+                    ? permissionState === 'granted' || permissionState === 'default'
+                      ? 'Receive browser push alerts for power outages'
+                      : 'Notification permission was denied — check your browser settings'
+                    : 'Not supported in this browser'}
+                </p>
+                {pushError && (
+                  <p className="text-sm text-red-400 mt-1">{pushError}</p>
+                )}
               </div>
-              <button
-                onClick={() => updateSetting('notifications', !settings.notifications)}
-                className={`w-12 h-6 rounded-full transition-colors ${
-                  settings.notifications ? 'bg-[#22A06B]' : 'bg-[#556E85]'
-                }`}
-              >
-                <div className={`w-5 h-5 rounded-full bg-white transition-transform ${
-                  settings.notifications ? 'translate-x-6' : 'translate-x-0.5'
-                }`}></div>
-              </button>
+              <div className="flex items-center gap-3">
+                {(loadingPushBackend || pushLoading) && (
+                  <span className="text-sm text-gray-500">Loading...</span>
+                )}
+                <button
+                  onClick={handlePushToggle}
+                  disabled={loadingPushBackend || pushLoading || !pushSupported}
+                  className={`w-12 h-6 rounded-full transition-colors ${
+                    pushBackendEnabled && pushSubscribed ? 'bg-[#22A06B]' : 'bg-[#556E85]'
+                  } disabled:opacity-50`}
+                >
+                  <div className={`w-5 h-5 rounded-full bg-white transition-transform ${
+                    pushBackendEnabled && pushSubscribed ? 'translate-x-6' : 'translate-x-0.5'
+                  }`}></div>
+                </button>
+              </div>
             </div>
             <div className="flex items-center justify-between">
               <div>
