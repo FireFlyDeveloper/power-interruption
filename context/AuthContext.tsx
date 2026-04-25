@@ -34,11 +34,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const loadSession = async () => {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
       try {
         const userData = await authService.getCurrentUser();
         setUser(userData);
       } catch (err) {
         console.error('Failed to load session:', err);
+        localStorage.removeItem('token');
         setUser(null);
       } finally {
         setIsLoading(false);

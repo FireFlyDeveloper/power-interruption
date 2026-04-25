@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import { useAuth } from './AuthContext';
 import { metadataService, SiteMetadata, StatusOption, SeverityOption, DeviceStatusOption } from './lib/metadataService';
 
 interface MetadataContextType {
@@ -17,6 +18,7 @@ interface MetadataContextType {
 const MetadataContext = createContext<MetadataContextType | undefined>(undefined);
 
 export function MetadataProvider({ children }: { children: ReactNode }) {
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [metadata, setMetadata] = useState<SiteMetadata | null>(null);
   const [grids, setGrids] = useState<string[]>([]);
   const [statuses, setStatuses] = useState<StatusOption[]>([]);
@@ -49,8 +51,12 @@ export function MetadataProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    fetchMetadata();
-  }, [fetchMetadata]);
+    if (!authLoading && isAuthenticated) {
+      fetchMetadata();
+    } else if (!authLoading && !isAuthenticated) {
+      setLoading(false);
+    }
+  }, [authLoading, isAuthenticated, fetchMetadata]);
 
   return (
     <MetadataContext.Provider value={{ metadata, grids, statuses, severities, deviceStatuses, loading, error, refetch: fetchMetadata }}>

@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import { useAuth } from './AuthContext';
 import { Device, PowerEvent } from '@/types/index';
 import { deviceService } from './services/deviceService';
 import { eventService } from './services/eventService';
@@ -21,6 +22,7 @@ interface DeviceContextType {
 const DeviceContext = createContext<DeviceContextType | undefined>(undefined);
 
 export function DeviceProvider({ children }: { children: ReactNode }) {
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [devices, setDevices] = useState<Device[]>([]);
   const [powerEvents, setPowerEvents] = useState<PowerEvent[]>([]);
 
@@ -43,9 +45,11 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    fetchDevices();
-    fetchEvents();
-  }, [fetchDevices, fetchEvents]);
+    if (!authLoading && isAuthenticated) {
+      fetchDevices();
+      fetchEvents();
+    }
+  }, [authLoading, isAuthenticated, fetchDevices, fetchEvents]);
 
   const addDevice = useCallback(async (deviceData: Omit<Device, 'id' | 'lastSeen'>) => {
     try {
@@ -84,6 +88,9 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
 
     try {
       await eventService.create({
+        title: `Power Outage - ${device.name}`,
+        description: `Power interruption reported on ${device.name} (grid: ${device.grid})`,
+        startTime: new Date().toISOString(),
         severity,
         location: device.grid,
         grid: device.grid,
