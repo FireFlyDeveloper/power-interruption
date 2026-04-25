@@ -12,7 +12,7 @@ export interface Device {
   updatedAt?: string;
 }
 
-export interface Event {
+export interface PowerEvent {
   id: string;
   deviceId: string;
   device?: Device;
@@ -34,9 +34,6 @@ export interface Event {
   affectedCustomers?: number;
   action?: string;
 }
-
-export type PowerEvent = Event;
-
 export interface EventTimeline {
   id: string;
   status: string;
