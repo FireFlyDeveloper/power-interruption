@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 const PUBLIC_VAPID_KEY = 'BBm5LE5SVwhP0nhzuHbrrTLUmnmvjPBw26JeXAphKHXzzhdWVI2-ibAIx13t0nSjikSgYEsI5iOushNacGDPl3Y';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 /**
  * Helper: convert a base64 string to a Uint8Array for the applicationServerKey.
@@ -85,7 +86,7 @@ export function usePushNotifications() {
       const token = localStorage.getItem('token');
       const subData = subscription.toJSON();
 
-      const res = await fetch(`http://localhost:3001/api/notifications/push/subscribe`, {
+      const res = await fetch(`${API_BASE}/api/notifications/push/subscribe`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -141,7 +142,7 @@ export function usePushNotifications() {
 
       // Notify backend to remove subscription
       const token = localStorage.getItem('token');
-      await fetch(`http://localhost:3001/api/notifications/push/subscribe`, {
+      await fetch(`${API_BASE}/api/notifications/push/subscribe`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
