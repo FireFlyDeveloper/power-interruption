@@ -9,6 +9,9 @@ import { eventService } from './services/eventService';
 interface DeviceContextType {
   devices: Device[];
   powerEvents: PowerEvent[];
+  eventPage: number;
+  eventTotal: number;
+  eventTotalPages: number;
   addDevice: (device: Omit<Device, 'id' | 'lastSeen'>) => Promise<void>;
   removeDevice: (id: string) => Promise<void>;
   updateDevice: (id: string, updates: Partial<Device>) => Promise<void>;
@@ -17,6 +20,7 @@ interface DeviceContextType {
   resolvePowerOutage: (eventId: string, startTime?: string) => Promise<void>;
   addPowerEvent: (event: import('./services/eventService').EventCreateInput) => Promise<void>;
   updateEventStatus: (eventId: string, status: string) => Promise<void>;
+  goToEventPage: (page: number) => Promise<void>;
 }
 
 const DeviceContext = createContext<DeviceContextType | undefined>(undefined);
@@ -25,6 +29,9 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [devices, setDevices] = useState<Device[]>([]);
   const [powerEvents, setPowerEvents] = useState<PowerEvent[]>([]);
+  const [eventPage, setEventPage] = useState(1);
+  const [eventTotal, setEventTotal] = useState(0);
+  const [eventTotalPages, setEventTotalPages] = useState(1);
 
   const fetchDevices = useCallback(async () => {
     try {
@@ -35,14 +42,22 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const fetchEvents = useCallback(async () => {
+  const fetchEvents = useCallback(async (page = 1) => {
     try {
-      const data = await eventService.getAll();
-      setPowerEvents(data);
+      const data = await eventService.getAll(page, 50);
+      setPowerEvents(data.events);
+      setEventPage(data.pagination.page);
+      setEventTotal(data.pagination.total);
+      setEventTotalPages(data.pagination.totalPages);
     } catch (e) {
       console.error(e);
     }
   }, []);
+
+  const goToEventPage = useCallback(async (page: number) => {
+    if (page < 1 || page > eventTotalPages) return;
+    await fetchEvents(page);
+  }, [fetchEvents, eventTotalPages]);
 
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
@@ -135,6 +150,9 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
     <DeviceContext.Provider value={{ 
       devices, 
       powerEvents,
+      eventPage,
+      eventTotal,
+      eventTotalPages,
       addDevice, 
       removeDevice, 
       updateDevice, 
@@ -143,6 +161,7 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
       resolvePowerOutage,
       addPowerEvent,
       updateEventStatus,
+      goToEventPage,
     }}>
       {children}
     </DeviceContext.Provider>

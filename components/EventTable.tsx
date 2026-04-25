@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { PowerEvent } from '@/types';
+import { useDevices } from '@/context/DeviceContext';
 
 interface EventTableProps {
   events: PowerEvent[];
@@ -35,6 +36,7 @@ const getSeverityClass = (severity: string) => {
 };
 
 export default function EventTable({ events, onEventClick }: EventTableProps) {
+  const { eventPage, eventTotal, eventTotalPages, goToEventPage } = useDevices();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('All');
   const [filterSeverity, setFilterSeverity] = useState<string>('All');
@@ -226,12 +228,24 @@ export default function EventTable({ events, onEventClick }: EventTableProps) {
         <div className="flex items-center gap-3">
           <i className="fas fa-circle text-emerald-700 text-[10px]"></i>
           <span className="text-base">live 32s</span>
-          <span className="bg-[#253D60] px-3 py-1 rounded-full text-sm font-medium">{filteredEvents.length} total</span>
+          <span className="bg-[#253D60] px-3 py-1 rounded-full text-sm font-medium">{eventTotal} total</span>
         </div>
-        <div>
-          <span className="text-base">1-{filteredEvents.length} of {filteredEvents.length}</span>
-          <i className="fas fa-chevron-left ml-4 mr-3 text-gray-500 text-lg cursor-pointer hover:text-gray-300"></i>
-          <i className="fas fa-chevron-right text-gray-400 text-lg cursor-pointer hover:text-gray-300"></i>
+        <div className="flex items-center gap-2">
+          <span className="text-base">{eventTotal > 0 ? `${(eventPage - 1) * 50 + 1}-${Math.min(eventPage * 50, eventTotal)}` : '0'} of {eventTotal}</span>
+          <button
+            onClick={() => goToEventPage(eventPage - 1)}
+            disabled={eventPage <= 1}
+            className={`text-lg cursor-pointer ${eventPage <= 1 ? 'text-gray-600 cursor-not-allowed' : 'text-gray-400 hover:text-gray-200'}`}
+          >
+            <i className="fas fa-chevron-left ml-4 mr-3"></i>
+          </button>
+          <button
+            onClick={() => goToEventPage(eventPage + 1)}
+            disabled={eventPage >= eventTotalPages}
+            className={`text-lg cursor-pointer ${eventPage >= eventTotalPages ? 'text-gray-600 cursor-not-allowed' : 'text-gray-400 hover:text-gray-200'}`}
+          >
+            <i className="fas fa-chevron-right"></i>
+          </button>
         </div>
       </div>
     </div>

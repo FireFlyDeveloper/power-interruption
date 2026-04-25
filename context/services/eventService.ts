@@ -16,9 +16,20 @@ export interface EventCreateInput {
   endTime?: string;
 }
 
+export interface PaginatedResponse<T> {
+  events: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasMore: boolean;
+  };
+}
+
 export const eventService = {
-  async getAll(): Promise<PowerEvent[]> {
-    return apiClient('/api/events');
+  async getAll(page = 1, limit = 50): Promise<PaginatedResponse<PowerEvent>> {
+    return apiClient(`/api/events?page=${page}&limit=${limit}`);
   },
 
   async getById(id: string): Promise<PowerEvent> {
