@@ -20,12 +20,9 @@ export default function DevicesPage() {
   // Edit form state
   const [editName, setEditName] = useState('');
   const [editGrid, setEditGrid] = useState('');
-  const [editStatus, setEditStatus] = useState<'online' | 'offline'>('online');
-
   // Form state
   const [deviceName, setDeviceName] = useState('');
   const [deviceGrid, setDeviceGrid] = useState(grids[0] || 'Balayan North');
-  const [deviceStatus, setDeviceStatus] = useState<'online' | 'offline'>('online');
 
   // Update grid default when metadata loads
   useEffect(() => {
@@ -44,14 +41,11 @@ export default function DevicesPage() {
           addDevice({
             name: deviceName,
             grid: deviceGrid,
-            status: deviceStatus,
             lat: position.coords.latitude,
             lng: position.coords.longitude,
-            signalStrength: 5,
           });
           setDeviceName('');
           setDeviceGrid(grids[0] || 'Balayan North');
-          setDeviceStatus('online');
           setShowAddModal(false);
         },
         (error) => {
@@ -60,14 +54,11 @@ export default function DevicesPage() {
           addDevice({
             name: deviceName,
             grid: deviceGrid,
-            status: deviceStatus,
             lat: 13.9394,
             lng: 120.7336,
-            signalStrength: 5,
           });
           setDeviceName('');
           setDeviceGrid(grids[0] || 'Balayan North');
-          setDeviceStatus('online');
           setShowAddModal(false);
         }
       );
@@ -76,17 +67,14 @@ export default function DevicesPage() {
       addDevice({
         name: deviceName,
         grid: deviceGrid,
-        status: deviceStatus,
         lat: 13.9394,
         lng: 120.7336,
-        signalStrength: 5,
       });
       setDeviceName('');
       setDeviceGrid(grids[0] || 'Balayan North');
-      setDeviceStatus('online');
       setShowAddModal(false);
     }
-  }, [deviceName, deviceGrid, deviceStatus, addDevice, grids]);
+  }, [deviceName, deviceGrid, addDevice, grids]);
 
   const handleDeleteDevice = useCallback((id: string) => {
     removeDevice(id);
@@ -98,7 +86,6 @@ export default function DevicesPage() {
     if (!selectedDevice) return;
     setEditName(selectedDevice.name);
     setEditGrid(selectedDevice.grid);
-    setEditStatus(selectedDevice.status as 'online' | 'offline');
     setIsEditing(true);
   }, [selectedDevice]);
 
@@ -107,11 +94,10 @@ export default function DevicesPage() {
     updateDevice(selectedDevice.id, {
       name: editName,
       grid: editGrid,
-      status: editStatus,
     });
     setIsEditing(false);
     setSelectedDevice(null);
-  }, [selectedDevice, editName, editGrid, editStatus, updateDevice]);
+  }, [selectedDevice, editName, editGrid, updateDevice]);
 
   const formatLastSeen = (isoString: string) => {
     const date = new Date(isoString);
@@ -236,34 +222,6 @@ export default function DevicesPage() {
                     <option key={g} value={g}>{g}</option>
                   ))}
                 </select>
-              </div>
-
-              <div>
-                <label className="block text-sm text-gray-400 mb-2">Status</label>
-                <div className="flex gap-4">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="status"
-                      value="online"
-                      checked={deviceStatus === 'online'}
-                      onChange={() => setDeviceStatus('online')}
-                      className="w-4 h-4 accent-[#1E5F4A]"
-                    />
-                    <span className="text-white">Online</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="status"
-                      value="offline"
-                      checked={deviceStatus === 'offline'}
-                      onChange={() => setDeviceStatus('offline')}
-                      className="w-4 h-4 accent-[#B45F5F]"
-                    />
-                    <span className="text-white">Offline</span>
-                  </label>
-                </div>
               </div>
 
               <div className="bg-[#1F314F] rounded-lg p-3 border border-[#3E5D88]">
@@ -434,33 +392,6 @@ export default function DevicesPage() {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm text-gray-400 mb-2">Status</label>
-                <div className="flex gap-4">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="editStatus"
-                      value="online"
-                      checked={editStatus === 'online'}
-                      onChange={() => setEditStatus('online')}
-                      className="w-4 h-4 accent-[#1E5F4A]"
-                    />
-                    <span className="text-white">Online</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="editStatus"
-                      value="offline"
-                      checked={editStatus === 'offline'}
-                      onChange={() => setEditStatus('offline')}
-                      className="w-4 h-4 accent-[#B45F5F]"
-                    />
-                    <span className="text-white">Offline</span>
-                  </label>
-                </div>
-              </div>
             </div>
 
             <div className="flex gap-3 mt-6">

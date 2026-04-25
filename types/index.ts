@@ -3,7 +3,7 @@ export interface Device {
   name: string;
   location?: string;
   grid: string;
-  status: string;
+  status?: string;
   lastSeen: string;
   lat?: number;
   lng?: number;
@@ -76,10 +76,8 @@ export interface DeviceCreateInput {
   name: string;
   location: string;
   grid: string;
-  status?: string;
   lat?: number;
   lng?: number;
-  signalStrength?: number;
 }
 
 export interface EventCreateInput {
