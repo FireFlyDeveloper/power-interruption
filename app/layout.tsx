@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Poppins } from 'next/font/google';
 import './globals.css';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 import { DeviceProvider } from '@/context/DeviceContext';
 import { AuthProvider } from '@/context/AuthContext';
 import { MetadataProvider } from '@/context/MetadataContext';
@@ -25,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={poppins.variable}>
+    <html lang="en" className={poppins.variable} suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -41,10 +42,6 @@ export default function RootLayout({
               } catch(e) {}
             `,
           }}
-        />
-        <link
-          rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
         />
       </head>
       <body className={`${poppins.className} bg-[#0C1119]`}>
