@@ -166,6 +166,26 @@ SELECT
 FROM devices;
 
 -- ============================================
+-- NOTIFICATION SETTINGS TABLE
+-- Tracks which users want email alerts per device.
+-- remove_all=true means they want alerts for ALL devices.
+-- device_id=NULL + remove_all=false = no device alerts.
+-- ============================================
+CREATE TABLE IF NOT EXISTS notification_settings (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    device_id VARCHAR(100) REFERENCES devices(device_id) ON DELETE CASCADE,
+    email_alerts BOOLEAN NOT NULL DEFAULT true,
+    remove_all BOOLEAN NOT NULL DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(user_id, device_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_notification_settings_user_id ON notification_settings(user_id);
+CREATE INDEX IF NOT EXISTS idx_notification_settings_device_id ON notification_settings(device_id);
+
+-- ============================================
 -- SEED DATA
 -- ============================================
 
