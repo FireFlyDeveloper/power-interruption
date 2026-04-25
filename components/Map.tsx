@@ -13,7 +13,7 @@ interface MapProps {
 const markerColors: Record<string, { border: string; bg: string }> = {
   Active: { border: '#dc2626', bg: '#fee2e2' },
   Investigating: { border: '#d97706', bg: '#fef3c7' },
-  Resolved: { border: '#059669', bg: '#d1fae5' }
+  Resolved: { border: '#047857', bg: '#a7f3d0' }
 };
 
 // Cluster nearby events to prevent overlap
@@ -82,6 +82,13 @@ export default function Map({ events, onMarkerClick }: MapProps) {
         }).addTo(map);
 
         mapRef.current = map;
+
+        // Fix for flex/grid layout containers — invalidate size after mount
+        // to ensure the map properly measures its container dimensions
+        requestAnimationFrame(() => {
+          map.invalidateSize();
+        });
+
         setReady(true);
       } catch (error) {
         console.error('Map initialization failed:', error);
