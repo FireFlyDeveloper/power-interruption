@@ -7,15 +7,12 @@ import Sidebar from '@/components/Sidebar';
 import MobileNav from '@/components/MobileNav';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
+import { useAppSettings } from '@/context/AppSettingsContext';
 
 export default function SettingsPage() {
   const { user, logout, updateProfile, changePassword } = useAuth();
+  const { settings, updateSetting } = useAppSettings();
   const router = useRouter();
-  const [notifications, setNotifications] = useState(true);
-  const [emailAlerts, setEmailAlerts] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
-  const [autoRefresh, setAutoRefresh] = useState(true);
-  const [refreshInterval, setRefreshInterval] = useState('30');
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [displayName, setDisplayName] = useState(user?.displayName || '');
@@ -52,13 +49,13 @@ export default function SettingsPage() {
                 <p className="text-sm text-gray-400">Receive alerts for new incidents</p>
               </div>
               <button
-                onClick={() => setNotifications(!notifications)}
+                onClick={() => updateSetting('notifications', !settings.notifications)}
                 className={`w-12 h-6 rounded-full transition-colors ${
-                  notifications ? 'bg-[#1E5F4A]' : 'bg-[#3D4F5F]'
+                  settings.notifications ? 'bg-[#1E5F4A]' : 'bg-[#3D4F5F]'
                 }`}
               >
                 <div className={`w-5 h-5 rounded-full bg-white transition-transform ${
-                  notifications ? 'translate-x-6' : 'translate-x-0.5'
+                  settings.notifications ? 'translate-x-6' : 'translate-x-0.5'
                 }`}></div>
               </button>
             </div>
@@ -68,13 +65,13 @@ export default function SettingsPage() {
                 <p className="text-sm text-gray-400">Receive email for critical events</p>
               </div>
               <button
-                onClick={() => setEmailAlerts(!emailAlerts)}
+                onClick={() => updateSetting('emailAlerts', !settings.emailAlerts)}
                 className={`w-12 h-6 rounded-full transition-colors ${
-                  emailAlerts ? 'bg-[#1E5F4A]' : 'bg-[#3D4F5F]'
+                  settings.emailAlerts ? 'bg-[#1E5F4A]' : 'bg-[#3D4F5F]'
                 }`}
               >
                 <div className={`w-5 h-5 rounded-full bg-white transition-transform ${
-                  emailAlerts ? 'translate-x-6' : 'translate-x-0.5'
+                  settings.emailAlerts ? 'translate-x-6' : 'translate-x-0.5'
                 }`}></div>
               </button>
             </div>
@@ -91,13 +88,13 @@ export default function SettingsPage() {
                 <p className="text-sm text-gray-400">Use dark theme for the dashboard</p>
               </div>
               <button
-                onClick={() => setDarkMode(!darkMode)}
+                onClick={() => updateSetting('darkMode', !settings.darkMode)}
                 className={`w-12 h-6 rounded-full transition-colors ${
-                  darkMode ? 'bg-[#1E5F4A]' : 'bg-[#3D4F5F]'
+                  settings.darkMode ? 'bg-[#1E5F4A]' : 'bg-[#3D4F5F]'
                 }`}
               >
                 <div className={`w-5 h-5 rounded-full bg-white transition-transform ${
-                  darkMode ? 'translate-x-6' : 'translate-x-0.5'
+                  settings.darkMode ? 'translate-x-6' : 'translate-x-0.5'
                 }`}></div>
               </button>
             </div>
@@ -107,25 +104,25 @@ export default function SettingsPage() {
                 <p className="text-sm text-gray-400">Automatically refresh data</p>
               </div>
               <button
-                onClick={() => setAutoRefresh(!autoRefresh)}
+                onClick={() => updateSetting('autoRefresh', !settings.autoRefresh)}
                 className={`w-12 h-6 rounded-full transition-colors ${
-                  autoRefresh ? 'bg-[#1E5F4A]' : 'bg-[#3D4F5F]'
+                  settings.autoRefresh ? 'bg-[#1E5F4A]' : 'bg-[#3D4F5F]'
                 }`}
               >
                 <div className={`w-5 h-5 rounded-full bg-white transition-transform ${
-                  autoRefresh ? 'translate-x-6' : 'translate-x-0.5'
+                  settings.autoRefresh ? 'translate-x-6' : 'translate-x-0.5'
                 }`}></div>
               </button>
             </div>
-            {autoRefresh && (
+            {settings.autoRefresh && (
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-white font-medium">Refresh Interval</p>
                   <p className="text-sm text-gray-400">Time in seconds between refreshes</p>
                 </div>
                 <select
-                  value={refreshInterval}
-                  onChange={(e) => setRefreshInterval(e.target.value)}
+                  value={String(settings.refreshInterval)}
+                  onChange={(e) => updateSetting('refreshInterval', Number(e.target.value))}
                   className="bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white"
                 >
                   <option value="15">15 seconds</option>

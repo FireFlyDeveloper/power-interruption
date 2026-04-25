@@ -4,6 +4,7 @@ import './globals.css';
 import { DeviceProvider } from '@/context/DeviceContext';
 import { AuthProvider } from '@/context/AuthContext';
 import { MetadataProvider } from '@/context/MetadataContext';
+import { AppSettingsProvider } from '@/context/AppSettingsContext';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -32,11 +33,13 @@ export default function RootLayout({
       </head>
       <body className={`${poppins.className} bg-[#0C1119]`}>
         <AuthProvider>
-          <MetadataProvider>
-            <DeviceProvider>
-              {children}
-            </DeviceProvider>
-          </MetadataProvider>
+          <AppSettingsProvider>
+            <MetadataProvider>
+              <DeviceProvider>
+                {children}
+              </DeviceProvider>
+            </MetadataProvider>
+          </AppSettingsProvider>
         </AuthProvider>
       </body>
     </html>
