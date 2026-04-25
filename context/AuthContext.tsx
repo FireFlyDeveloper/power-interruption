@@ -54,14 +54,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       const data = await authService.login(credentials);
-      if (data.token && data.user) {
+      if (data.token) {
         localStorage.setItem('token', data.token);
-        setUser(data.user);
-      } else if (data.user) {
-        setUser(data.user);
-      } else {
-        setUser(data);
       }
+      setUser(data.user || data);
       return true;
     } catch (err: any) {
       setError(err.message || 'Login failed');
