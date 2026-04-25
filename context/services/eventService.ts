@@ -1,68 +1,70 @@
+import { PowerEvent } from '@/types';
 import { apiClient } from '../lib/apiClient';
-import { PowerEvent } from '@/types/index';
 
 export interface EventCreateInput {
-  deviceId?: string;
   title: string;
   description: string;
-  severity: string;
-  grid: string;
-  location: string;
   startTime: string;
+  severity: string;
+  location: string;
+  grid?: string;
   lat?: number;
   lng?: number;
+  device_id?: string;
+  deviceId?: string;
   notes?: string;
   affectedCustomers?: number;
-  endTime?: string;
+  affected_customers?: number;
 }
 
-export interface PaginatedResponse<T> {
-  events: T[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasMore: boolean;
-  };
+export interface DashboardStats {
+  activeCount: number;
+  criticalCount: number;
+  resolvedToday: number;
+  avgDuration: number;
+  resolvedWithDurationCount: number;
+}
+
+export interface StatsResponse {
+  total: number;
+  byStatus: { status: string; count: number }[];
+  bySeverity: { severity: string; count: number }[];
+  byGrid: { grid: string; count: number }[];
+  recent: any[];
+  dashboard: DashboardStats;
 }
 
 export const eventService = {
-  async getAll(page = 1, limit = 50): Promise<PaginatedResponse<PowerEvent>> {
+  async getAll(page = 1, limit = 50): Promise<{ events: PowerEvent[]; pagination: { page: number; limit: number; total: number; totalPages: number; hasMore: boolean } }> {
     return apiClient(`/api/events?page=${page}&limit=${limit}`);
+  },
+
+  async getStats(): Promise<StatsResponse> {
+    return apiClient('/api/events/stats');
   },
 
   async getById(id: string): Promise<PowerEvent> {
     return apiClient(`/api/events/${id}`);
   },
 
-  async create(event: EventCreateInput): Promise<PowerEvent> {
+  async updateStatus(id: string, status: string): Promise<PowerEvent> {
+    return apiClient(`/api/events/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ status }),
+    });
+  },
+
+  async create(input: EventCreateInput): Promise<PowerEvent> {
     return apiClient('/api/events', {
       method: 'POST',
-      body: JSON.stringify(event),
+      body: JSON.stringify(input),
     });
   },
 
-  async updateStatus(id: string, status: string, duration?: string): Promise<PowerEvent> {
-    return apiClient(`/api/events/${id}`, {
+  async resolve(eventId: string, startTime?: string): Promise<PowerEvent> {
+    return apiClient(`/api/events/${eventId}`, {
       method: 'PUT',
-      body: JSON.stringify({ status, duration }),
-    });
-  },
-
-  async resolve(id: string, startTime?: string): Promise<PowerEvent> {
-    let duration: string | undefined = undefined;
-    if (startTime) {
-      const start = new Date(startTime).getTime();
-      const now = Date.now();
-      const diffMs = now - start;
-      const hours = Math.floor(diffMs / 3600000);
-      const minutes = Math.floor((diffMs % 3600000) / 60000);
-      duration = `${hours}h ${minutes}m`;
-    }
-    return apiClient(`/api/events/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify({ status: 'Resolved', duration }),
+      body: JSON.stringify({ status: 'Resolved', ...(startTime ? { endTime: startTime } : {}) }),
     });
   },
 };

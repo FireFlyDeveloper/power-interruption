@@ -4,7 +4,7 @@ import { createContext, useContext, useState, useCallback, useEffect, ReactNode 
 import { useAuth } from './AuthContext';
 import { Device, PowerEvent } from '@/types/index';
 import { deviceService } from './services/deviceService';
-import { eventService } from './services/eventService';
+import { eventService, DashboardStats } from './services/eventService';
 
 interface DeviceContextType {
   devices: Device[];
@@ -12,6 +12,8 @@ interface DeviceContextType {
   eventPage: number;
   eventTotal: number;
   eventTotalPages: number;
+  dashboardStats: DashboardStats | null;
+  statsLoading: boolean;
   addDevice: (device: Omit<Device, 'id' | 'lastSeen'>) => Promise<void>;
   removeDevice: (id: string) => Promise<void>;
   updateDevice: (id: string, updates: Partial<Device>) => Promise<void>;
@@ -32,6 +34,8 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
   const [eventPage, setEventPage] = useState(1);
   const [eventTotal, setEventTotal] = useState(0);
   const [eventTotalPages, setEventTotalPages] = useState(1);
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   const fetchDevices = useCallback(async () => {
     try {
@@ -59,12 +63,25 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
     await fetchEvents(page);
   }, [fetchEvents, eventTotalPages]);
 
+  const fetchStats = useCallback(async () => {
+    try {
+      setStatsLoading(true);
+      const data = await eventService.getStats();
+      setDashboardStats(data.dashboard);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setStatsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
       fetchDevices();
       fetchEvents();
+      fetchStats();
     }
-  }, [authLoading, isAuthenticated, fetchDevices, fetchEvents]);
+  }, [authLoading, isAuthenticated, fetchDevices, fetchEvents, fetchStats]);
 
   const addDevice = useCallback(async (deviceData: Omit<Device, 'id' | 'lastSeen'>) => {
     try {
@@ -153,6 +170,8 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
       eventPage,
       eventTotal,
       eventTotalPages,
+      dashboardStats,
+      statsLoading,
       addDevice, 
       removeDevice, 
       updateDevice, 

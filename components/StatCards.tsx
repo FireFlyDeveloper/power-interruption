@@ -4,50 +4,30 @@ import { useDevices } from '@/context/DeviceContext';
 import { useMemo } from 'react';
 
 export default function StatCards() {
-  const { devices, powerEvents } = useDevices();
+  const { devices, dashboardStats, statsLoading } = useDevices();
 
   const stats = useMemo(() => {
-    const activeEvents = powerEvents.filter(e => e.status !== 'Resolved');
-    const criticalCount = powerEvents.filter(e => e.severity === 'Critical' && e.status !== 'Resolved').length;
-    const mediumCount = activeEvents.length - criticalCount;
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const resolvedToday = powerEvents.filter(e => {
-      if (e.status !== 'Resolved') return false;
-      const resolvedDate = e.endTime ? new Date(e.endTime) : null;
-      return resolvedDate && resolvedDate >= today;
-    });
-
-    // Average duration of resolved events that have a duration
-    const resolvedWithDuration = powerEvents.filter(e => e.status === 'Resolved' && e.duration);
-    let avgDuration = 0;
-    if (resolvedWithDuration.length > 0) {
-      const total = resolvedWithDuration.reduce((sum, e) => {
-        // Handle both raw minutes (number) and legacy string format like "2h 30m"
-        const duration = e.duration;
-        if (typeof duration === 'number') {
-          return sum + duration;
-        }
-        if (typeof duration === 'string') {
-          const match = duration.match(/(?:(\d+)h)?\s*(?:(\d+)m)?/);
-          if (match) {
-            const hours = parseInt(match[1] || '0');
-            const mins = parseInt(match[2] || '0');
-            return sum + hours * 60 + mins;
-          }
-        }
-        return sum;
-      }, 0);
-      avgDuration = Math.round(total / resolvedWithDuration.length);
+    if (statsLoading || !dashboardStats) {
+      return [
+        { label: 'Active', icon: 'fa-bolt', value: '...', subtext: 'loading', badge: null, badgeColor: '', unit: undefined },
+        { label: 'Critical', icon: 'fa-exclamation-triangle', value: '...', subtext: 'loading', badge: null, badgeColor: '', unit: undefined },
+        { label: 'Resolved today', icon: 'fa-check-circle', value: '...', subtext: 'loading', badge: null, badgeColor: '', unit: undefined },
+        { label: 'Avg duration', icon: 'fa-hourglass-half', value: '...', subtext: 'loading', unit: undefined, badge: null, badgeColor: '' },
+      ];
     }
+
+    const activeCount = dashboardStats.activeCount;
+    const criticalCount = dashboardStats.criticalCount;
+    const mediumCount = activeCount - criticalCount;
+    const avgDuration = dashboardStats.avgDuration;
+    const resolvedWithDurationCount = dashboardStats.resolvedWithDurationCount;
 
     return [
       {
         label: 'Active',
         icon: 'fa-bolt',
-        value: String(activeEvents.length),
-        subtext: `${criticalCount} critical · ${mediumCount} medium`,
+        value: String(activeCount),
+        subtext: `${criticalCount} critical · ${Math.max(0, mediumCount)} medium`,
         badge: null as string | null,
         badgeColor: '',
         unit: undefined as string | undefined,
@@ -56,7 +36,7 @@ export default function StatCards() {
         label: 'Critical',
         icon: 'fa-exclamation-triangle',
         value: String(criticalCount),
-        subtext: `${activeEvents.length} total active`,
+        subtext: `${activeCount} total active`,
         badge: null as string | null,
         badgeColor: '',
         unit: undefined as string | undefined,
@@ -64,7 +44,7 @@ export default function StatCards() {
       {
         label: 'Resolved today',
         icon: 'fa-check-circle',
-        value: String(resolvedToday.length),
+        value: String(dashboardStats.resolvedToday),
         subtext: `${devices.length} devices monitored`,
         badge: null as string | null,
         badgeColor: '',
@@ -74,13 +54,13 @@ export default function StatCards() {
         label: 'Avg duration',
         icon: 'fa-hourglass-half',
         value: String(avgDuration),
-        subtext: avgDuration > 0 ? `across ${resolvedWithDuration.length} events` : 'no data yet',
+        subtext: avgDuration > 0 ? `across ${resolvedWithDurationCount} events` : 'no data yet',
         unit: avgDuration > 0 ? 'min' : undefined,
         badge: null as string | null,
         badgeColor: '',
       },
     ];
-  }, [devices, powerEvents]);
+  }, [devices, dashboardStats, statsLoading]);
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mt-5">
