@@ -24,12 +24,18 @@ export default function StatCards() {
     let avgDuration = 0;
     if (resolvedWithDuration.length > 0) {
       const total = resolvedWithDuration.reduce((sum, e) => {
-        // Try to parse duration like "2h 30m" or "150m" or ISO period
-        const match = e.duration?.match(/(?:(\d+)h)?\s*(?:(\d+)m)?/);
-        if (match) {
-          const hours = parseInt(match[1] || '0');
-          const mins = parseInt(match[2] || '0');
-          return sum + hours * 60 + mins;
+        // Handle both raw minutes (number) and legacy string format like "2h 30m"
+        const duration = e.duration;
+        if (typeof duration === 'number') {
+          return sum + duration;
+        }
+        if (typeof duration === 'string') {
+          const match = duration.match(/(?:(\d+)h)?\s*(?:(\d+)m)?/);
+          if (match) {
+            const hours = parseInt(match[1] || '0');
+            const mins = parseInt(match[2] || '0');
+            return sum + hours * 60 + mins;
+          }
         }
         return sum;
       }, 0);

@@ -30,7 +30,7 @@ export interface PowerEvent {
   lat: number;
   lng: number;
   start?: string;
-  duration?: string;
+  duration?: string | number;
   notes?: string;
   affectedCustomers?: number;
   action?: string;
