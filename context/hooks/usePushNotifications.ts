@@ -79,7 +79,7 @@ export function usePushNotifications() {
       // Subscribe to push
       const subscription = await swRef.current.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(PUBLIC_VAPID_KEY),
+        applicationServerKey: urlBase64ToUint8Array(PUBLIC_VAPID_KEY) as unknown as BufferSource,
       });
 
       // Send subscription to backend
