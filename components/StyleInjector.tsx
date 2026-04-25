@@ -79,10 +79,10 @@ export default function StyleInjector() {
       // ██████ TEXT COLORS ██████
       // Standard Tailwind text classes
       'html.light [class*="text-white"] { color: #1e293b !important; }',
-      'html.light [class*="text-gray-300"] { color: #475569 !important; }',
-      'html.light [class*="text-gray-400"] { color: #64748b !important; }',
-      'html.light [class*="text-gray-500"] { color: #94a3b8 !important; }',
-      'html.light [class*="text-gray-600"] { color: #cbd5e1 !important; }',
+      'html.light [class*="text-gray-300"] { color: #334155 !important; }',
+      'html.light [class*="text-gray-400"] { color: #475569 !important; }',
+      'html.light [class*="text-gray-500"] { color: #64748b !important; }',
+      'html.light [class*="text-gray-600"] { color: #e2e8f0 !important; }',
       'html.light [class*="text-green-400"] { color: #16a34a !important; }',
       'html.light [class*="text-red-400"] { color: #dc2626 !important; }',
 
