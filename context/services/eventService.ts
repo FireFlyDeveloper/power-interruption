@@ -7,7 +7,6 @@ export interface EventCreateInput {
   startTime: string;
   severity: string;
   location: string;
-  grid?: string;
   lat?: number;
   lng?: number;
   device_id?: string;
@@ -29,7 +28,6 @@ export interface StatsResponse {
   total: number;
   byStatus: { status: string; count: number }[];
   bySeverity: { severity: string; count: number }[];
-  byGrid: { grid: string; count: number }[];
   recent: any[];
   dashboard: DashboardStats;
 }

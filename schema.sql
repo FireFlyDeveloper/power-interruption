@@ -27,7 +27,6 @@ CREATE TABLE IF NOT EXISTS devices (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     device_id VARCHAR(100) NOT NULL UNIQUE,
     name VARCHAR(255),
-    grid VARCHAR(50),
     lat DOUBLE PRECISION NOT NULL,
     lng DOUBLE PRECISION NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'offline',
@@ -39,7 +38,6 @@ CREATE TABLE IF NOT EXISTS devices (
 
 CREATE INDEX IF NOT EXISTS idx_devices_device_id ON devices(device_id);
 CREATE INDEX IF NOT EXISTS idx_devices_status ON devices(status);
-CREATE INDEX IF NOT EXISTS idx_devices_grid ON devices(grid);
 CREATE INDEX IF NOT EXISTS idx_devices_last_seen ON devices(last_seen);
 
 -- ============================================
@@ -51,7 +49,6 @@ CREATE TABLE IF NOT EXISTS events (
     status VARCHAR(20) NOT NULL DEFAULT 'Active',
     severity VARCHAR(20) NOT NULL DEFAULT 'Medium',
     location TEXT,
-    grid VARCHAR(50),
     lat DOUBLE PRECISION NOT NULL,
     lng DOUBLE PRECISION NOT NULL,
     start_time TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -67,7 +64,6 @@ CREATE INDEX IF NOT EXISTS idx_events_status ON events(status);
 CREATE INDEX IF NOT EXISTS idx_events_severity ON events(severity);
 CREATE INDEX IF NOT EXISTS idx_events_start_time ON events(start_time);
 CREATE INDEX IF NOT EXISTS idx_events_created_at ON events(created_at);
-CREATE INDEX IF NOT EXISTS idx_events_grid ON events(grid);
 
 -- ============================================
 -- STATUS_LOGS TABLE
@@ -142,7 +138,6 @@ SELECT
     e.status,
     e.severity,
     e.location,
-    e.grid,
     e.lat,
     e.lng,
     e.start_time,
@@ -160,7 +155,6 @@ SELECT
     device_id,
     name,
     status,
-    grid,
     lat,
     lng,
     last_seen,

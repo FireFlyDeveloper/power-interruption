@@ -135,29 +135,6 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Grid Settings */}
-        <div className="bg-[#141C28] border border-[#273953] rounded-2xl p-6">
-          <h2 className="text-lg font-semibold text-white mb-4">Grid Configuration</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm text-gray-400 mb-2">Grid Location</label>
-              <select className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white">
-                <option>Balayan, Batangas</option>
-                <option>Lipa City, Batangas</option>
-                <option>Batangas City</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm text-gray-400 mb-2">Alert Threshold</label>
-              <select className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white">
-                <option>Low (All incidents)</option>
-                <option>Medium (Critical & High)</option>
-                <option>High (Critical only)</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
         {/* Account Settings */}
         <div className="bg-[#141C28] border border-[#273953] rounded-2xl p-6">
           <h2 className="text-lg font-semibold text-white mb-4">Account</h2>

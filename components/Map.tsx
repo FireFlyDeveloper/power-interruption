@@ -168,7 +168,6 @@ export default function Map({ events, onMarkerClick }: MapProps) {
           <div style="color: #6b7280; margin-bottom: 4px; font-size: 0.875rem;">
             <span style="color: ${colors.border}; font-weight: 600;">${event.status}</span> | ${event.severity}
           </div>
-          <div style="color: #9ca3af; font-size: 0.75rem;">Grid: ${event.grid}</div>
           <div style="color: #9ca3af; font-size: 0.75rem;">Duration: ${event.duration}</div>
         </div>
       `;

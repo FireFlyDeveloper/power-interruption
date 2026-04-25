@@ -2,8 +2,6 @@ export interface Device {
   id: string;
   deviceId?: string;
   name: string;
-  location?: string;
-  grid: string;
   status?: string;
   lastSeen: string;
   lat?: number;
@@ -21,7 +19,6 @@ export interface PowerEvent {
   description: string;
   severity: string;
   status: string;
-  grid: string;
   location: string;
   startTime: string;
   endTime?: string;
@@ -76,7 +73,6 @@ export function getEventTimeline(event: PowerEvent): EventTimeline[] {
 export interface DeviceCreateInput {
   name: string;
   location: string;
-  grid: string;
   lat?: number;
   lng?: number;
 }
@@ -87,7 +83,6 @@ export interface EventCreateInput {
   description: string;
   severity: string;
   status?: string;
-  grid: string;
   location: string;
   startTime: string;
   endTime?: string;

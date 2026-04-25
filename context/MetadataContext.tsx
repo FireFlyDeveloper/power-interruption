@@ -6,7 +6,6 @@ import { metadataService, SiteMetadata, StatusOption, SeverityOption, DeviceStat
 
 interface MetadataContextType {
   metadata: SiteMetadata | null;
-  grids: string[];
   statuses: StatusOption[];
   severities: SeverityOption[];
   deviceStatuses: DeviceStatusOption[];
@@ -20,7 +19,6 @@ const MetadataContext = createContext<MetadataContextType | undefined>(undefined
 export function MetadataProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [metadata, setMetadata] = useState<SiteMetadata | null>(null);
-  const [grids, setGrids] = useState<string[]>([]);
   const [statuses, setStatuses] = useState<StatusOption[]>([]);
   const [severities, setSeverities] = useState<SeverityOption[]>([]);
   const [deviceStatuses, setDeviceStatuses] = useState<DeviceStatusOption[]>([]);
@@ -36,9 +34,7 @@ export function MetadataProvider({ children }: { children: ReactNode }) {
         name: allData.metadata.name,
         description: allData.metadata.description,
         location: allData.metadata.location,
-        grids: allData.metadata.grids,
       });
-      setGrids(allData.grids);
       setStatuses(allData.statuses);
       setSeverities(allData.severities);
       setDeviceStatuses(allData.deviceStatuses);
@@ -59,7 +55,7 @@ export function MetadataProvider({ children }: { children: ReactNode }) {
   }, [authLoading, isAuthenticated, fetchMetadata]);
 
   return (
-    <MetadataContext.Provider value={{ metadata, grids, statuses, severities, deviceStatuses, loading, error, refetch: fetchMetadata }}>
+    <MetadataContext.Provider value={{ metadata, statuses, severities, deviceStatuses, loading, error, refetch: fetchMetadata }}>
       {children}
     </MetadataContext.Provider>
   );

@@ -131,11 +131,6 @@ export default function DetailPanel({ event, isOpen, onClose }: DetailPanelProps
           </div>
           
           <div className="flex justify-between border-b border-[#38618B] pb-3">
-            <span className="text-gray-400 text-base">Grid/Zone</span>
-            <span className="text-white text-lg">Grid {event.grid}</span>
-          </div>
-          
-          <div className="flex justify-between border-b border-[#38618B] pb-3">
             <span className="text-gray-400 text-base">Start time</span>
             <span className="text-white text-lg">{event.start}</span>
           </div>

@@ -5,7 +5,6 @@ export interface Metadata {
   name: string;
   description: string;
   location: string;
-  grids: string[];
 }
 
 export type SiteMetadata = Metadata;
@@ -35,17 +34,12 @@ export const metadataService = {
     statuses: StatusOption[];
     severities: SeverityOption[];
     deviceStatuses: DeviceStatusOption[];
-    grids: string[];
   }> => {
     return apiClient('/api/metadata/all');
   },
 
   getMetadata: async (): Promise<Metadata> => {
     return apiClient('/api/metadata');
-  },
-
-  getGrids: async (): Promise<string[]> => {
-    return apiClient('/api/metadata/grids');
   },
 
   getStatuses: async (): Promise<StatusOption[]> => {

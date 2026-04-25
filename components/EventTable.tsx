@@ -51,8 +51,7 @@ export default function EventTable({ events, onEventClick }: EventTableProps) {
         const query = searchQuery.toLowerCase();
         const matchesSearch = 
           event.id.toLowerCase().includes(query) ||
-          event.location.toLowerCase().includes(query) ||
-          event.grid.toLowerCase().includes(query);
+          event.location.toLowerCase().includes(query);
         if (!matchesSearch) return false;
       }
       
@@ -186,14 +185,13 @@ export default function EventTable({ events, onEventClick }: EventTableProps) {
               <th className="px-4 py-4 text-left font-semibold">Status</th>
               <th className="px-4 py-4 text-left hidden sm:table-cell font-semibold">Sev</th>
               <th className="px-4 py-4 text-left font-semibold">Location</th>
-              <th className="px-4 py-4 text-left hidden md:table-cell font-semibold">Grid</th>
               <th className="px-4 py-4 text-left font-semibold">Duration</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#2D4567]">
             {filteredEvents.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+                <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
                   No events found
                 </td>
               </tr>
@@ -214,7 +212,6 @@ export default function EventTable({ events, onEventClick }: EventTableProps) {
                     {event.severity}
                   </td>
                   <td className="px-4 py-4 text-gray-200">{event.location}</td>
-                  <td className="px-4 py-4 hidden md:table-cell text-gray-300">{event.grid}</td>
                   <td className="px-4 py-4 font-mono text-gray-200">{event.duration}</td>
                 </tr>
               ))

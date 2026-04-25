@@ -1,17 +1,15 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { useDevices } from '@/context/DeviceContext';
 import { useAuth } from '@/context/AuthContext';
-import { useMetadata } from '@/context/MetadataContext';
 import { Device } from '@/types';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
 export default function DevicesPage() {
   const { devices, addDevice, removeDevice, reportPowerOutage, updateDevice } = useDevices();
   const { isAdmin } = useAuth();
-  const { grids } = useMetadata();
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
@@ -19,17 +17,8 @@ export default function DevicesPage() {
   
   // Edit form state
   const [editName, setEditName] = useState('');
-  const [editGrid, setEditGrid] = useState('');
   // Form state
   const [deviceName, setDeviceName] = useState('');
-  const [deviceGrid, setDeviceGrid] = useState(grids[0] || 'Balayan North');
-
-  // Update grid default when metadata loads
-  useEffect(() => {
-    if (grids.length > 0 && !grids.includes(deviceGrid)) {
-      setDeviceGrid(grids[0]);
-    }
-  }, [grids, deviceGrid]);
 
   const handleAddDevice = useCallback(() => {
     if (!deviceName.trim()) return;
@@ -40,12 +29,10 @@ export default function DevicesPage() {
         (position) => {
           addDevice({
             name: deviceName,
-            grid: deviceGrid,
             lat: position.coords.latitude,
             lng: position.coords.longitude,
           });
           setDeviceName('');
-          setDeviceGrid(grids[0] || 'Balayan North');
           setShowAddModal(false);
         },
         (error) => {
@@ -56,7 +43,7 @@ export default function DevicesPage() {
     } else {
       alert('GPS is not available on this device. A device with GPS is required to add a monitoring station.');
     }
-  }, [deviceName, deviceGrid, addDevice, grids]);
+  }, [deviceName, addDevice]);
 
   const handleDeleteDevice = useCallback((id: string) => {
     removeDevice(id);
@@ -67,7 +54,6 @@ export default function DevicesPage() {
   const handleEditDevice = useCallback(() => {
     if (!selectedDevice) return;
     setEditName(selectedDevice.name);
-    setEditGrid(selectedDevice.grid);
     setIsEditing(true);
   }, [selectedDevice]);
 
@@ -75,11 +61,10 @@ export default function DevicesPage() {
     if (!selectedDevice || !editName.trim()) return;
     updateDevice(selectedDevice.id, {
       name: editName,
-      grid: editGrid,
     });
     setIsEditing(false);
     setSelectedDevice(null);
-  }, [selectedDevice, editName, editGrid, updateDevice]);
+  }, [selectedDevice, editName, updateDevice]);
 
   const formatLastSeen = (isoString: string) => {
     const date = new Date(isoString);
@@ -100,7 +85,7 @@ export default function DevicesPage() {
       <AppLayout>
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-white">Devices</h1>
-        <p className="text-gray-400 mt-1">Manage grid monitoring devices</p>
+        <p className="text-gray-400 mt-1">Manage monitoring devices</p>
       </div>
 
       {/* Stats */}
@@ -150,7 +135,6 @@ export default function DevicesPage() {
               </span>
             </div>
             <h3 className="text-lg font-semibold text-white mb-1">{device.name}</h3>
-            <p className="text-sm text-gray-400 mb-3">{device.grid}</p>
             <div className="flex items-center justify-between text-sm mb-3">
               <span className="text-gray-500">{device.deviceId}</span>
               <span className="text-gray-500">{formatLastSeen(device.lastSeen)}</span>
@@ -191,26 +175,6 @@ export default function DevicesPage() {
                   placeholder="Enter device name"
                   className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-[#5A8BC9]"
                 />
-              </div>
-              
-              <div>
-                <label className="block text-sm text-gray-400 mb-2">Grid</label>
-                <select
-                  value={deviceGrid}
-                  onChange={(e) => setDeviceGrid(e.target.value)}
-                  className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#5A8BC9]"
-                >
-                  {grids.map((g) => (
-                    <option key={g} value={g}>{g}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="bg-[#1F314F] rounded-lg p-3 border border-[#3E5D88]">
-                <div className="flex items-center gap-2 text-sm text-gray-400">
-                  <i className="fas fa-map-marker-alt"></i>
-                  <span>GPS location will be captured automatically</span>
-                </div>
               </div>
             </div>
 
@@ -262,11 +226,6 @@ export default function DevicesPage() {
                 </span>
               </div>
               
-              <div className="flex justify-between items-center py-2 border-b border-[#273953]">
-                <span className="text-gray-400">Grid</span>
-                <span className="text-white">{selectedDevice.grid}</span>
-              </div>
-
               <div className="flex justify-between items-center py-2 border-b border-[#273953]">
                 <span className="text-gray-400">Signal</span>
                 <span className="text-white">{selectedDevice.signalStrength}/5</span>
@@ -360,20 +319,6 @@ export default function DevicesPage() {
                   className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#5A8BC9]"
                 />
               </div>
-              
-              <div>
-                <label className="block text-sm text-gray-400 mb-2">Grid</label>
-                <select
-                  value={editGrid}
-                  onChange={(e) => setEditGrid(e.target.value)}
-                  className="w-full bg-[#1F314F] border border-[#3E5D88] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#5A8BC9]"
-                >
-                  {grids.map((g) => (
-                    <option key={g} value={g}>{g}</option>
-                  ))}
-                </select>
-              </div>
-
             </div>
 
             <div className="flex gap-3 mt-6">

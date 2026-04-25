@@ -136,11 +136,10 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
     try {
       await eventService.create({
         title: `Power Outage - ${device.name}`,
-        description: `Power interruption reported on ${device.name} (grid: ${device.grid})`,
+        description: `Power interruption reported on ${device.name}`,
         startTime: new Date().toISOString(),
         severity,
-        location: device.grid,
-        grid: device.grid,
+        location: device.name || device.deviceId || 'Unknown',
         lat: device.lat,
         lng: device.lng,
       });
