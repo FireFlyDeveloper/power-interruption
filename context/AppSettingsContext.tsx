@@ -48,11 +48,9 @@ function applyDarkMode(darkMode: boolean) {
   if (typeof window === 'undefined') return;
   const root = document.documentElement;
   if (darkMode) {
-    root.classList.add('dark');
-    root.style.colorScheme = 'dark';
+    root.classList.remove('light');
   } else {
-    root.classList.remove('dark');
-    root.style.colorScheme = 'light';
+    root.classList.add('light');
   }
 }
 

@@ -1,11 +1,56 @@
 @import "tailwindcss";
 
-:root {
-  --font-poppins: 'Poppins', sans-serif;
+@custom-variant dark (&:where(.dark, .dark *));
+
+html {
+  --bg-primary: #0C1119;
+  --bg-secondary: #142336;
+  --bg-card: #141C28;
+  --bg-card-hover: #1a2535;
+  --bg-input: #1F314F;
+  --border-primary: #273953;
+  --border-secondary: #3E5D88;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --accent-green: #22c55e;
+  --accent-green-bg: #166534;
+  --accent-blue: #3b82f6;
+  --accent-blue-bg: #1e3a5f;
+  --accent-red: #ef4444;
+  --accent-red-bg: #7f1d1d;
+}
+
+.light {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f8fafc;
+  --bg-input: #e2e8f0;
+  --border-primary: #cbd5e1;
+  --border-secondary: #94a3b8;
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --accent-green: #16a34a;
+  --accent-green-bg: #dcfce7;
+  --accent-blue: #2563eb;
+  --accent-blue-bg: #dbeafe;
+  --accent-red: #dc2626;
+  --accent-red-bg: #fee2e2;
+}
+
+/* Light mode base overrides */
+.light,
+.light body {
+  background-color: #f8fafc !important;
+  color: #1e293b !important;
 }
 
 body {
   font-family: var(--font-poppins);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 /* Custom scrollbar */
@@ -15,34 +60,34 @@ body {
 }
 
 .thin-scroll::-webkit-scrollbar-track {
-  background: #1F2C40;
+  background: var(--bg-secondary);
 }
 
 .thin-scroll::-webkit-scrollbar-thumb {
-  background: #466185;
+  background: var(--border-secondary);
   border-radius: 12px;
 }
 
 /* Leaflet custom popup styles */
 .leaflet-popup-content-wrapper {
-  background: #142336 !important;
-  color: #e2e8f0 !important;
-  border: 1px solid #375F8F !important;
+  background: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-primary) !important;
   border-radius: 8px !important;
   font-family: var(--font-poppins) !important;
 }
 
 .leaflet-popup-tip {
-  background: #142336 !important;
-  border: 1px solid #375F8F !important;
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-primary) !important;
 }
 
 .leaflet-container a.leaflet-popup-close-button {
-  color: #94a3b8 !important;
+  color: var(--text-muted) !important;
 }
 
 .leaflet-container a.leaflet-popup-close-button:hover {
-  color: #fff !important;
+  color: var(--text-primary) !important;
 }
 
 /* Responsive text sizes */
