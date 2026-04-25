@@ -159,7 +159,7 @@ export default function DevicesPage() {
               <div className="flex items-center gap-2">
                 <i className="fas fa-signal text-gray-400"></i>
                 <span className="text-sm text-gray-400">
-                  {device.signalStrength}/5
+                  {device.signalStrength}
                 </span>
               </div>
             </div>
