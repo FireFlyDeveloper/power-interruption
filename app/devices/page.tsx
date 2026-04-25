@@ -34,7 +34,7 @@ export default function DevicesPage() {
   const handleAddDevice = useCallback(() => {
     if (!deviceName.trim()) return;
 
-    // Get current GPS location
+    // Get current GPS location — required for production
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -50,29 +50,11 @@ export default function DevicesPage() {
         },
         (error) => {
           console.error('GPS Error:', error);
-          // Use default location if GPS fails
-          addDevice({
-            name: deviceName,
-            grid: deviceGrid,
-            lat: 13.9394,
-            lng: 120.7336,
-          });
-          setDeviceName('');
-          setDeviceGrid(grids[0] || 'Balayan North');
-          setShowAddModal(false);
+          alert('GPS location is required to add a device. Please enable location access and try again.');
         }
       );
     } else {
-      // Use default location if GPS not available
-      addDevice({
-        name: deviceName,
-        grid: deviceGrid,
-        lat: 13.9394,
-        lng: 120.7336,
-      });
-      setDeviceName('');
-      setDeviceGrid(grids[0] || 'Balayan North');
-      setShowAddModal(false);
+      alert('GPS is not available on this device. A device with GPS is required to add a monitoring station.');
     }
   }, [deviceName, deviceGrid, addDevice, grids]);
 
@@ -170,7 +152,7 @@ export default function DevicesPage() {
             <h3 className="text-lg font-semibold text-white mb-1">{device.name}</h3>
             <p className="text-sm text-gray-400 mb-3">{device.grid}</p>
             <div className="flex items-center justify-between text-sm mb-3">
-              <span className="text-gray-500">{device.id}</span>
+              <span className="text-gray-500">{device.deviceId}</span>
               <span className="text-gray-500">{formatLastSeen(device.lastSeen)}</span>
             </div>
             <div className="flex items-center gap-4 mb-4">
@@ -258,7 +240,7 @@ export default function DevicesPage() {
             <div className="flex items-start justify-between mb-4">
               <div>
                 <h2 className="text-xl font-bold text-white">{selectedDevice.name}</h2>
-                <p className="text-gray-400">{selectedDevice.id}</p>
+                <p className="text-gray-400">{selectedDevice.deviceId}</p>
               </div>
               <button
                 onClick={() => setSelectedDevice(null)}

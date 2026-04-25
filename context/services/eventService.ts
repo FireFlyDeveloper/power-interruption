@@ -9,8 +9,8 @@ export interface EventCreateInput {
   grid: string;
   location: string;
   startTime: string;
-  lat: number;
-  lng: number;
+  lat?: number;
+  lng?: number;
   notes?: string;
   affectedCustomers?: number;
   endTime?: string;

@@ -94,8 +94,8 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
         severity,
         location: device.grid,
         grid: device.grid,
-        lat: device.lat ?? 13.9394,
-        lng: device.lng ?? 120.7336,
+        lat: device.lat,
+        lng: device.lng,
       });
       await fetchEvents();
     } catch (e) {
