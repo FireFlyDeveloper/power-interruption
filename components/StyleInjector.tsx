@@ -5,7 +5,8 @@ import { useAppSettings } from '@/context/AppSettingsContext';
 
 /**
  * Injects CSS overrides for light mode into a <style> element in the <head>.
- * This approach bypasses Tailwind v4's build-time CSS stripping.
+ * Targets each hex color by matching a unique substring within the class name
+ * (e.g., "-0C1119" matches "bg-[#0C1119]"), avoiding special character issues.
  */
 export default function StyleInjector() {
   const { settings } = useAppSettings();
@@ -13,7 +14,6 @@ export default function StyleInjector() {
   useEffect(() => {
     let styleEl = document.getElementById('light-mode-overrides');
     if (settings.darkMode) {
-      // Dark mode — no overrides needed. Remove existing if any.
       if (styleEl) styleEl.remove();
       return;
     }
@@ -24,59 +24,104 @@ export default function StyleInjector() {
       document.head.appendChild(styleEl);
     }
 
-    styleEl.textContent = `
-/* Light mode: override hardcoded Tailwind arbitrary colors */
-html.light, html.light body {
-  background-color: #f8fafc !important;
-  color: #1e293b !important;
-}
+    styleEl.textContent = [
+      '/* ======= LIGHT MODE OVERRIDES ======= */',
 
-/* Background overrides — dark bg -> light bg */
-html.light [class*="-0C1119"] { background-color: #f8fafc !important; }
-html.light [class*="-141C28"] { background-color: #ffffff !important; }
-html.light [class*="-142336"] { background-color: #f1f5f9 !important; }
-html.light [class*="-1F314F"] { background-color: #e2e8f0 !important; }
-html.light [class*="-122336"],
-html.light [class*="-101E30"],
-html.light [class*="-101C2C"],
-html.light [class*="-101C2A"],
-html.light [class*="-0F1724"],
-html.light [class*="-0F1A28"],
-html.light [class*="-0F1D2F"],
-html.light [class*="-0F1E30"],
-html.light [class*="-0F2037"],
-html.light [class*="-1a2234"] { background-color: #f1f5f9 !important; }
+      // Body backgrounds
+      'html.light [class*="-0C1119"] { background-color: #f8fafc !important; }',
+      'html.light [class*="-0F1A28"] { background-color: #f1f5f9 !important; }',
+      'html.light [class*="-0F1724"] { background-color: #ffffff !important; }',
+      'html.light [class*="-0F1E30"] { background-color: #f1f5f9 !important; }',
+      'html.light [class*="-0F1D2F"] { background-color: #f8fafc !important; }',
+      'html.light [class*="-0F2037"] { background-color: #f1f5f9 !important; }',
+      'html.light [class*="-101E30"] { background-color: #f1f5f9 !important; }',
+      'html.light [class*="-101C2A"] { background-color: #ffffff !important; }',
+      'html.light [class*="-101C2C"] { background-color: #ffffff !important; }',
+      'html.light [class*="-122336"] { background-color: #f1f5f9 !important; }',
+      'html.light [class*="-141C28"] { background-color: #ffffff !important; }',
+      'html.light [class*="-142336"] { background-color: #ffffff !important; }',
+      'html.light [class*="-1E314A"] { background-color: #e2e8f0 !important; }',
+      'html.light [class*="-1F314F"] { background-color: #e2e8f0 !important; }',
+      'html.light [class*="-263F63"] { background-color: #e2e8f0 !important; }',
+      'html.light [class*="-253D60"] { background-color: #e2e8f0 !important; }',
+      'html.light [class*="-2A3E5A"] { background-color: #d1d5db !important; }',
+      'html.light [class*="-1a2234"] { background-color: #ffffff !important; }',
+      'html.light [class*="-1E5F4A"] { background-color: #f0fdf4 !important; }',
+      'html.light [class*="-3D4F5F"] { background-color: #e2e8f0 !important; }',
 
-/* Border overrides */
-html.light [class*="-273953"] { border-color: #cbd5e1 !important; }
-html.light [class*="-3E5D88"] { border-color: #94a3b8 !important; }
+      // Status badge backgrounds
+      'html.light [class*="-4A2E2E"] { background-color: #fef2f2 !important; }',
+      'html.light [class*="-4A4024"] { background-color: #fffbeb !important; }',
+      'html.light [class*="-1F4733"] { background-color: #f0fdf4 !important; }',
 
-/* Text overrides — keep status indicators, override standard text */
-html.light [class*="gray-200"] { color: #1e293b !important; }
-html.light [class*="gray-300"] { color: #334155 !important; }
-html.light [class*="gray-400"] { color: #64748b !important; }
-html.light [class*="gray-500"] { color: #94a3b8 !important; }
-html.light [class*="text-white"] { color: #1e293b !important; }
+      // Borders
+      'html.light [class*="-273953"] { border-color: #cbd5e1 !important; }',
+      'html.light [class*="-3E5D88"] { border-color: #cbd5e1 !important; }',
+      'html.light [class*="-2A3E5A"] { border-color: #cbd5e1 !important; }',
+      'html.light [class*="-46648B"] { border-color: #cbd5e1 !important; }',
+      'html.light [class*="-25344A"] { border-color: #cbd5e1 !important; }',
+      'html.light [class*="-2F4565"] { border-color: #cbd5e1 !important; }',
+      'html.light [class*="-2E405B"] { border-color: #cbd5e1 !important; }',
+      'html.light [class*="-375F8F"] { border-color: #cbd5e1 !important; }',
+      'html.light [class*="-375A84"] { border-color: #cbd5e1 !important; }',
+      'html.light [class*="-34537A"] { border-color: #cbd5e1 !important; }',
+      'html.light [class*="-38618B"] { border-color: #cbd5e1 !important; }',
+      'html.light [class*="-3866A0"] { border-color: #cbd5e1 !important; }',
+      'html.light [class*="-2C4668"] { border-color: #cbd5e1 !important; }',
+      'html.light [class*="-2D4567"] { border-color: #cbd5e1 !important; }',
+      'html.light [class*="-4D73A5"] { border-color: #cbd5e1 !important; }',
 
-/* Keep status indicator text colors (green/red/gold) */
-html.light [class*="E5A5A5"] { color: #e5a5a5 !important; }
-html.light [class*="F9B5B5"] { color: #f9b5b5 !important; }
-html.light [class*="FCC5C5"] { color: #fcc5c5 !important; }
-html.light [class*="FCDBA0"] { color: #fcdba0 !important; }
-html.light [class*="FCE6B4"] { color: #fce6b4 !important; }
-html.light [class*="F0CF8F"] { color: #f0cf8f !important; }
-html.light [class*="BCF0D5"] { color: #bcf0d5 !important; }
-html.light [class*="B2D2F5"] { color: #b2d2f5 !important; }
-html.light [class*="B6D0F5"] { color: #b6d0f5 !important; }
-html.light [class*="059669"] { color: #059669 !important; }
-html.light [class*="d97706"] { color: #d97706 !important; }
-html.light [class*="dc2626"] { color: #dc2626 !important; }
+      // Status badge borders
+      'html.light [class*="-B45F5F"] { border-color: #fca5a5 !important; }',
+      'html.light [class*="-C6993A"] { border-color: #fcd34d !important; }',
+      'html.light [class*="-479A6E"] { border-color: #86efac !important; }',
 
-/* Hover state overrides */
-html.light [class*="1F3450"]:hover { background-color: #e2e8f0 !important; }
-html.light [class*="2A3E5A"]:hover { background-color: #e2e8f0 !important; }
-html.light [class*="4D5F6F"]:hover { background-color: #e2e8f0 !important; }
-`;
+      // Standard text
+      'html.light [class*="text-white"] { color: #1e293b !important; }',
+      'html.light [class*="text-gray-100"] { color: #1e293b !important; }',
+      'html.light [class*="text-gray-200"] { color: #334155 !important; }',
+      'html.light [class*="text-gray-300"] { color: #475569 !important; }',
+      'html.light [class*="text-gray-400"] { color: #64748b !important; }',
+      'html.light [class*="text-gray-500"] { color: #94a3b8 !important; }',
+      'html.light [class*="text-gray-600"] { color: #cbd5e1 !important; }',
+      'html.light [class*="text-gray-700"] { color: #64748b !important; }',
+      'html.light [class*="text-emerald-700"] { color: #16a34a !important; }',
+      'html.light [class*="text-green-400"] { color: #16a34a !important; }',
+      'html.light [class*="text-red-400"] { color: #dc2626 !important; }',
+
+      // Accent/status text colors
+      'html.light [class*="-B6D0F5"] { color: #2563eb !important; }',
+      'html.light [class*="-F9B5B5"] { color: #dc2626 !important; }',
+      'html.light [class*="-FCC5C5"] { color: #dc2626 !important; }',
+      'html.light [class*="-FCDBA0"] { color: #d97706 !important; }',
+      'html.light [class*="-FCE6B4"] { color: #d97706 !important; }',
+      'html.light [class*="-F0CF8F"] { color: #d97706 !important; }',
+      'html.light [class*="-BCF0D5"] { color: #16a34a !important; }',
+      'html.light [class*="-B2D2F5"] { color: #2563eb !important; }',
+      'html.light [class*="-E5A5A5"] { color: #dc2626 !important; }',
+
+      // Map/status dot colors (keep visible)
+      'html.light [class*="-dc2626"] { color: #dc2626 !important; }',
+      'html.light [class*="-d97706"] { color: #d97706 !important; }',
+      'html.light [class*="-059669"] { color: #16a34a !important; }',
+
+      // Hover states
+      'html.light [class*="-1F3450"]:hover { background-color: #e2e8f0 !important; }',
+      'html.light [class*="-2A3E5A"]:hover { background-color: #d1d5db !important; }',
+
+      // Box shadow override
+      'html.light [class*="-8px_rgba"] { box-shadow: 0 8px 16px -8px rgba(0,0,0,0.08) !important; }',
+
+      // Input placeholders
+      'html.light input::placeholder { color: #94a3b8 !important; }',
+
+      // Body style direct for safety
+      'html.light, html.light body { background-color: #f8fafc !important; color: #1e293b !important; }',
+
+      // Fix the inset overlay backgrounds
+      'html.light [class*="black\\/80"] { background-color: rgba(0,0,0,0.3) !important; }',
+      'html.light [class*="black\\/70"] { background-color: rgba(0,0,0,0.25) !important; }',
+    ].join('\n');
   }, [settings.darkMode]);
 
   return null;
