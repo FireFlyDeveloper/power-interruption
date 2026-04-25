@@ -126,7 +126,8 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
       await eventService.updateStatus(eventId, status);
       await fetchEvents();
     } catch (e) {
-      console.error(e);
+      console.error('Failed to update event status:', e);
+      throw e;
     }
   }, [fetchEvents]);
 
