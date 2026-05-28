@@ -13,52 +13,49 @@ interface MapProps {
 }
 
 interface SensorLocation {
-  id: string;
+  id: string;        // DOM element ID, e.g. "TRANSFORMER_1"
+  deviceId: string;  // Backend device_id, e.g. "sambat_1"
   name: string;
   coords: [number, number];
+  customers: string[];
 }
 
-// Balayan sensor locations — static coordinates, real-time status via MQTT
-const SENSOR_LOCATIONS: SensorLocation[] = [
-  { id: 'SAMBAT_1', name: 'SAMBAT Sensor 1', coords: [13.9479, 120.7097] },
-  { id: 'SAMBAT_2', name: 'SAMBAT Sensor 2', coords: [13.9504, 120.7015] },
-  { id: 'SANTOL_1', name: 'SANTOL Sensor 1', coords: [13.9466, 120.7039] },
-  { id: 'SANTOL_2', name: 'SANTOL Sensor 2', coords: [13.9456, 120.7090] },
+// Transformers with mock customer data
+const TRANSFORMERS: SensorLocation[] = [
+  { id: 'TRANSFORMER_1', deviceId: 'sambat_1', name: 'Transformer 1', coords: [13.9479, 120.7097], customers: ['Rhomer', 'Robe', 'Julie Anne'] },
+  { id: 'TRANSFORMER_2', deviceId: 'sambat_2', name: 'Transformer 2', coords: [13.9504, 120.7015], customers: ['Jasmine', 'Kim'] },
+  { id: 'TRANSFORMER_3', deviceId: 'santol_1', name: 'Transformer 3', coords: [13.9466, 120.7039], customers: ['Joylene', 'Rhein', 'Nioko'] },
+  { id: 'TRANSFORMER_4', deviceId: 'santol_2', name: 'Transformer 4', coords: [13.9456, 120.7090], customers: ['Mika', 'Nhezel'] },
 ];
 
-const DEFAULT_CENTER: [number, number] = [13.94, 120.73];
-const DEFAULT_ZOOM = 14;
+// Lookup deviceId -> Transformer info
+const transformerByDevice: Record<string, SensorLocation> = {};
+TRANSFORMERS.forEach(t => { transformerByDevice[t.deviceId] = t; });
 
-export default function Map({ events = [], onMarkerClick, fullscreen = false }: MapProps) {
+const DEFAULT_CENTER: [number, number] = [13.94, 120.73];
+
+export default function Map({ events = [], fullscreen = false }: MapProps) {
   const mapRef = useRef<any>(null);
   const LRef = useRef<LeafletType | null>(null);
-  const markersRef = useRef<any[]>([]);
   const sensorMarkersRef = useRef<any[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const userMarkerRef = useRef<any>(null);
   const routingControlRef = useRef<any>(null);
+  const infoPanelRef = useRef<HTMLDivElement | null>(null);
   const [ready, setReady] = useState(false);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
-  const [statusMap, setStatusMap] = useState<Record<string, boolean>>({});
+  const [selectedTransformer, setSelectedTransformer] = useState<SensorLocation | null>(null);
 
-  // Public method: set a sensor's online/offline status
-  const setSensorStatus = useCallback((id: string, isOnline: boolean) => {
-    setStatusMap(prev => ({ ...prev, [id]: isOnline }));
-  }, []);
+  // Derive online/offline from backend events
+  // A device is offline if it has an Active (unresolved) event
+  const getSensorOnline = useCallback((deviceId: string): boolean => {
+    const deviceEvents = events.filter(e =>
+      e.deviceId?.toLowerCase() === deviceId.toLowerCase()
+    );
+    return !deviceEvents.some(e => e.status === 'Active');
+  }, [events]);
 
-  // Expose setSensorStatus globally for MQTT/WebSocket updates
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      (window as any).__setSensorStatus = setSensorStatus;
-    }
-    return () => {
-      if (typeof window !== 'undefined') {
-        delete (window as any).__setSensorStatus;
-      }
-    };
-  }, [setSensorStatus]);
-
-  // Build route to a sensor
+  // Build route to a transformer
   const buildRoute = useCallback((target: [number, number]) => {
     if (!userLocation || !mapRef.current) return;
     const L = LRef.current;
@@ -90,24 +87,25 @@ export default function Map({ events = [], onMarkerClick, fullscreen = false }: 
     }
   }, [userLocation]);
 
-  // Handle sensor marker click
-  const handleSensorClick = useCallback((coords: [number, number]) => {
-    if (!mapRef.current || !userLocation) return;
+  // Handle transformer click — show info + route
+  const handleTransformerClick = useCallback((tf: SensorLocation) => {
+    setSelectedTransformer(tf);
 
+    if (!mapRef.current || !userLocation) return;
     const map = mapRef.current;
 
-    // STEP 1: zoom to sensor
-    map.flyTo(coords, 17, { duration: 1.2 });
+    // Zoom to transformer
+    map.flyTo(tf.coords, 17, { duration: 1.2 });
 
-    // STEP 2: draw route
+    // Draw route
     setTimeout(() => {
-      buildRoute(coords);
+      buildRoute(tf.coords);
     }, 800);
 
-    // STEP 3: return to user location
+    // Return to user
     setTimeout(() => {
       map.flyTo(userLocation, 15, { duration: 1.5 });
-    }, 3000);
+    }, 3500);
   }, [userLocation, buildRoute]);
 
   // Initialize map once
@@ -122,10 +120,7 @@ export default function Map({ events = [], onMarkerClick, fullscreen = false }: 
           import('leaflet'),
           import('leaflet-routing-machine'),
           new Promise<void>((resolve) => {
-            if (document.getElementById('leaflet-css')) {
-              resolve();
-              return;
-            }
+            if (document.getElementById('leaflet-css')) { resolve(); return; }
             const link = document.createElement('link');
             link.id = 'leaflet-css';
             link.rel = 'stylesheet';
@@ -135,10 +130,7 @@ export default function Map({ events = [], onMarkerClick, fullscreen = false }: 
             document.head.appendChild(link);
           }),
           new Promise<void>((resolve) => {
-            if (document.getElementById('leaflet-rm-css')) {
-              resolve();
-              return;
-            }
+            if (document.getElementById('leaflet-rm-css')) { resolve(); return; }
             const link = document.createElement('link');
             link.id = 'leaflet-rm-css';
             link.rel = 'stylesheet';
@@ -159,39 +151,25 @@ export default function Map({ events = [], onMarkerClick, fullscreen = false }: 
         });
 
         if (fullscreen) {
-          // Satellite view for fullscreen mode
           L.tileLayer(
             'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-            {
-              attribution: '&copy; Esri',
-              maxZoom: 20,
-            }
+            { attribution: '&copy; Esri', maxZoom: 20 }
           ).addTo(map);
-
-          // Labels overlay
           L.tileLayer(
             'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
-            {
-              attribution: '&copy; Esri',
-              maxZoom: 20,
-            }
+            { attribution: '&copy; Esri', maxZoom: 20 }
           ).addTo(map);
         } else {
-          // Street map for dashboard
           L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-            subdomains: 'abcd',
-            maxZoom: 20,
+            subdomains: 'abcd', maxZoom: 20,
           }).addTo(map);
         }
 
         map.setView(DEFAULT_CENTER, fullscreen ? 14 : 13);
         mapRef.current = map;
 
-        requestAnimationFrame(() => {
-          map.invalidateSize();
-        });
-
+        requestAnimationFrame(() => { map.invalidateSize(); });
         setReady(true);
       } catch (error) {
         console.error('Map initialization failed:', error);
@@ -203,22 +181,18 @@ export default function Map({ events = [], onMarkerClick, fullscreen = false }: 
     return () => {
       isMounted = false;
       if (routingControlRef.current && mapRef.current) {
-        try {
-          mapRef.current.removeControl(routingControlRef.current);
-        } catch (e) {}
+        try { mapRef.current.removeControl(routingControlRef.current); } catch (e) {}
         routingControlRef.current = null;
       }
       if (mapRef.current) {
-        try {
-          mapRef.current.remove();
-        } catch (e) {}
+        try { mapRef.current.remove(); } catch (e) {}
         mapRef.current = null;
       }
       setReady(false);
     };
   }, [fullscreen]);
 
-  // GPS geolocation (fullscreen mode)
+  // GPS geolocation
   useEffect(() => {
     if (!ready || !fullscreen || !mapRef.current) return;
     const L = LRef.current;
@@ -228,66 +202,58 @@ export default function Map({ events = [], onMarkerClick, fullscreen = false }: 
       (pos) => {
         const loc: [number, number] = [pos.coords.latitude, pos.coords.longitude];
         setUserLocation(loc);
-
         if (!mapRef.current) return;
         mapRef.current.setView(loc, 15);
-
-        // Add user location marker
-        if (userMarkerRef.current) {
-          mapRef.current.removeLayer(userMarkerRef.current);
-        }
+        if (userMarkerRef.current) mapRef.current.removeLayer(userMarkerRef.current);
         userMarkerRef.current = L.marker(loc)
           .addTo(mapRef.current)
           .bindPopup('📍 Your Location');
       },
       () => {
-        // Fallback to Balayan center
         setUserLocation(DEFAULT_CENTER);
-        if (mapRef.current) {
-          mapRef.current.setView(DEFAULT_CENTER, 15);
-        }
+        if (mapRef.current) mapRef.current.setView(DEFAULT_CENTER, 15);
       }
     );
 
     return () => {
       if (userMarkerRef.current && mapRef.current) {
-        try {
-          mapRef.current.removeLayer(userMarkerRef.current);
-        } catch (e) {}
+        try { mapRef.current.removeLayer(userMarkerRef.current); } catch (e) {}
         userMarkerRef.current = null;
       }
     };
   }, [ready, fullscreen]);
 
-  // Create sensor markers (fullscreen mode)
+  // Create / update transformer markers (fullscreen mode)
   useEffect(() => {
     if (!ready || !fullscreen || !mapRef.current) return;
     const map = mapRef.current;
     const L = LRef.current;
     if (!map || !L) return;
 
-    // Clear existing sensor markers
+    // Clear existing markers
     sensorMarkersRef.current.forEach(m => {
       try { if (map.hasLayer(m)) m.remove(); } catch (e) {}
     });
     sensorMarkersRef.current = [];
 
-    SENSOR_LOCATIONS.forEach((loc) => {
+    TRANSFORMERS.forEach((tf) => {
+      const isOnline = getSensorOnline(tf.deviceId);
+
       const el = document.createElement('div');
-      el.className = 'location-wrapper';
-      el.id = loc.id;
+      el.className = 'location-wrapper' + (isOnline ? '' : ' offline');
+      el.id = tf.id;
 
       el.innerHTML = `
         <div class="location-card">
-          <div class="location-title">${loc.name}</div>
-          <div class="location-desc">${loc.id}</div>
+          <div class="location-title">${tf.name}</div>
+          <div class="location-desc">${isOnline ? '✅ Online' : '⚠️ Outage'}</div>
         </div>
         <div class="location-pin"></div>
       `;
 
-      el.onclick = () => handleSensorClick(loc.coords);
+      el.onclick = () => handleTransformerClick(tf);
 
-      const marker = L.marker(loc.coords, {
+      const marker = L.marker(tf.coords, {
         icon: L.divIcon({
           className: '',
           html: el,
@@ -298,93 +264,71 @@ export default function Map({ events = [], onMarkerClick, fullscreen = false }: 
 
       sensorMarkersRef.current.push(marker);
     });
-  }, [ready, fullscreen, handleSensorClick]);
-
-  // Update sensor status visuals
-  useEffect(() => {
-    for (const [id, isOnline] of Object.entries(statusMap)) {
-      const el = document.getElementById(id);
-      if (!el) continue;
-      el.classList.toggle('offline', !isOnline);
-    }
-  }, [statusMap]);
-
-  // Event markers for non-fullscreen mode
-  useEffect(() => {
-    if (!ready || fullscreen) return;
-    const map = mapRef.current;
-    const L = LRef.current;
-    if (!map || !L) return;
-
-    // Clear existing event markers
-    markersRef.current.forEach(marker => {
-      try { if (map.hasLayer(marker)) marker.remove(); } catch (e) {}
-    });
-    markersRef.current = [];
-
-    const markerColors: Record<string, { border: string; bg: string }> = {
-      Active: { border: '#dc2626', bg: '#fee2e2' },
-      Investigating: { border: '#d97706', bg: '#fef3c7' },
-      Resolved: { border: '#047857', bg: '#a7f3d0' },
-    };
-
-    const getClusteredOffset = (index: number, total: number): [number, number] => {
-      if (total <= 1) return [0, 0];
-      const offsets: [number, number][] = [
-        [0, 0], [0.0004, 0.0004], [-0.0004, 0.0004],
-        [0.0004, -0.0004], [-0.0004, -0.0004],
-      ];
-      return offsets[index % offsets.length];
-    };
-
-    events.forEach((event, index) => {
-      const colors = markerColors[event.status] || markerColors.Active;
-      const [offsetX, offsetY] = getClusteredOffset(index, events.length);
-      const lat = event.lat + offsetY;
-      const lng = event.lng + offsetX;
-
-      const icon = L.divIcon({
-        className: 'custom-div-icon',
-        html: `
-          <div style="
-            background-color: ${colors.bg}; 
-            border: 3px solid ${colors.border}; 
-            width: 32px; height: 32px; 
-            border-radius: 50%; 
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer;
-          ">
-            <div style="width: 12px; height: 12px; background: ${colors.border}; border-radius: 50%;"></div>
-          </div>
-        `,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
-        popupAnchor: [0, -16],
-      });
-
-      const marker = L.marker([lat, lng], { icon }).addTo(map);
-      const popupContent = `
-        <div style="min-width: 180px; font-family: var(--font-poppins, sans-serif);">
-          <div style="font-weight: 700; font-size: 1rem; margin-bottom: 6px; color: #1f2937;">${event.id} - ${event.location}</div>
-          <div style="color: #6b7280; margin-bottom: 4px; font-size: 0.875rem;">
-            <span style="color: ${colors.border}; font-weight: 600;">${event.status}</span> | ${event.severity}
-          </div>
-          <div style="color: #9ca3af; font-size: 0.75rem;">Duration: ${event.duration}</div>
-        </div>
-      `;
-      marker.bindPopup(popupContent);
-      if (onMarkerClick) {
-        marker.on('click', () => onMarkerClick(event));
-      }
-      markersRef.current.push(marker);
-    });
-  }, [events, ready, fullscreen, onMarkerClick]);
+  }, [ready, fullscreen, handleTransformerClick, getSensorOnline]);
 
   return (
-    <div
-      ref={containerRef}
-      className={fullscreen ? 'w-full h-full' : 'w-full h-full min-h-[500px]'}
-    />
+    <div className="relative w-full h-full">
+      <div ref={containerRef} className={fullscreen ? 'w-full h-full' : 'w-full h-full min-h-[500px]'} />
+
+      {/* Transformer Info Panel */}
+      {selectedTransformer && (
+        <div className="absolute top-4 right-4 z-[1000] bg-[#0C1119]/90 backdrop-blur-md border border-[#273953] rounded-2xl p-5 w-72 shadow-2xl">
+          {/* Close button */}
+          <button
+            onClick={() => setSelectedTransformer(null)}
+            className="absolute top-3 right-3 text-gray-400 hover:text-white text-lg leading-none"
+          >
+            ✕
+          </button>
+
+          {/* Header */}
+          <div className="flex items-center gap-3 mb-4">
+            <div className={`w-3 h-3 rounded-full ${getSensorOnline(selectedTransformer.deviceId) ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.7)]' : 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.7)] animate-pulse'}`} />
+            <div>
+              <h3 className="text-white font-bold text-lg">{selectedTransformer.name}</h3>
+              <span className={`text-xs font-medium ${getSensorOnline(selectedTransformer.deviceId) ? 'text-green-400' : 'text-red-400'}`}>
+                {getSensorOnline(selectedTransformer.deviceId) ? '● Online' : '● Outage Detected'}
+              </span>
+            </div>
+          </div>
+
+          {/* Coordinates */}
+          <div className="text-xs text-gray-500 mb-3 font-mono">
+            {selectedTransformer.coords[0].toFixed(4)}, {selectedTransformer.coords[1].toFixed(4)}
+          </div>
+
+          {/* Affected Customers */}
+          <div className="border-t border-[#273953] pt-3">
+            <h4 className="text-gray-300 text-sm font-semibold mb-2">
+              <i className="fas fa-users mr-2 text-gray-500"></i>
+              Affected Customers
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {selectedTransformer.customers.map((name, i) => (
+                <span key={i} className="bg-[#1F314F] text-gray-200 text-xs px-3 py-1.5 rounded-full border border-[#3E5D88]">
+                  {name}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Route button */}
+          {userLocation && (
+            <button
+              onClick={() => {
+                const map = mapRef.current;
+                if (!map) return;
+                map.flyTo(selectedTransformer.coords, 17, { duration: 1.2 });
+                setTimeout(() => buildRoute(selectedTransformer.coords), 800);
+              }}
+              className="mt-4 w-full py-2.5 bg-[#1F314F] hover:bg-[#2A4568] text-white text-sm font-medium rounded-xl border border-[#3E5D88] transition-colors"
+            >
+              <i className="fas fa-route mr-2"></i>
+              Navigate to {selectedTransformer.name}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

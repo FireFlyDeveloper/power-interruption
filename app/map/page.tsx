@@ -1,12 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import Header from '@/components/Header';
 import Sidebar from '@/components/Sidebar';
 import MobileNav from '@/components/MobileNav';
-import { PowerEvent } from '@/types';
-import DetailPanel from '@/components/DetailPanel';
 import { useDevices } from '@/context/DeviceContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
@@ -21,18 +18,6 @@ const Map = dynamic(() => import('@/components/Map'), {
 
 export default function MapPage() {
   const { powerEvents } = useDevices();
-  const [selectedEvent, setSelectedEvent] = useState<PowerEvent | null>(null);
-  const [isPanelOpen, setIsPanelOpen] = useState(false);
-
-  const handleEventClick = (event: PowerEvent) => {
-    setSelectedEvent(event);
-    setIsPanelOpen(true);
-  };
-
-  const handleClosePanel = () => {
-    setIsPanelOpen(false);
-    setTimeout(() => setSelectedEvent(null), 300);
-  };
 
   return (
     <ProtectedRoute>
@@ -47,7 +32,6 @@ export default function MapPage() {
             <div className="absolute inset-0">
               <Map
                 events={powerEvents}
-                onMarkerClick={handleEventClick}
                 fullscreen={true}
               />
             </div>
@@ -55,12 +39,6 @@ export default function MapPage() {
         </div>
 
         <MobileNav />
-
-        <DetailPanel
-          event={selectedEvent}
-          isOpen={isPanelOpen}
-          onClose={handleClosePanel}
-        />
       </div>
     </ProtectedRoute>
   );
