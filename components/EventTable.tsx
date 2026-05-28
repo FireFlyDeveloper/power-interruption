@@ -50,7 +50,6 @@ export default function EventTable({ events, onEventClick }: EventTableProps) {
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         const matchesSearch = 
-          event.id.toLowerCase().includes(query) ||
           event.location.toLowerCase().includes(query);
         if (!matchesSearch) return false;
       }
@@ -95,7 +94,7 @@ export default function EventTable({ events, onEventClick }: EventTableProps) {
           <i className="fas fa-search text-gray-400 mr-2 text-base"></i>
           <input
             type="text"
-            placeholder="Search ID, location..."
+            placeholder="Search location..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-transparent border-0 text-base text-white placeholder-gray-500 focus:outline-none"
@@ -181,7 +180,6 @@ export default function EventTable({ events, onEventClick }: EventTableProps) {
         <table className="w-full text-base">
           <thead className="bg-[#0F1E30] text-gray-300 text-sm uppercase border-b border-[#2C4668]">
             <tr>
-              <th className="px-4 py-4 text-left font-semibold">ID</th>
               <th className="px-4 py-4 text-left font-semibold">Status</th>
               <th className="px-4 py-4 text-left hidden sm:table-cell font-semibold">Sev</th>
               <th className="px-4 py-4 text-left font-semibold">Location</th>
@@ -191,7 +189,7 @@ export default function EventTable({ events, onEventClick }: EventTableProps) {
           <tbody className="divide-y divide-[#2D4567]">
             {filteredEvents.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
                   No events found
                 </td>
               </tr>
@@ -202,7 +200,6 @@ export default function EventTable({ events, onEventClick }: EventTableProps) {
                   onClick={() => handleEventClick(event)}
                   className="hover:bg-[#1F3450] cursor-pointer transition-colors text-base"
                 >
-                  <td className="px-4 py-4 font-mono text-[#B6D0F5] font-medium">{event.id}</td>
                   <td className="px-4 py-4">
                     <span className={`text-xs px-3 py-1 rounded-full border font-semibold ${getBadgeClass(event.status)}`}>
                       {event.status === 'Investigating' ? 'Invest.' : event.status}
