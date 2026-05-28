@@ -22,8 +22,8 @@ interface SensorLocation {
 
 // Transformers with mock customer data
 const TRANSFORMERS: SensorLocation[] = [
-  { id: 'TRANSFORMER_1', deviceId: 'sambat_1', name: 'Transformer 1', coords: [13.9479, 120.7097], customers: ['Rhomer', 'Robe', 'Julie Anne'] },
-  { id: 'TRANSFORMER_2', deviceId: 'sambat_2', name: 'Transformer 2', coords: [13.9456, 120.7090], customers: ['Jasmine', 'Kim'] },
+  { id: 'TRANSFORMER_1', deviceId: 'sambat_1', name: 'Sitio Sambat Transformer 1', coords: [13.9479, 120.7097], customers: ['Rhomer', 'Robe', 'Julie Anne'] },
+  { id: 'TRANSFORMER_2', deviceId: 'sambat_2', name: 'Sitio Sambat Transformer 2', coords: [13.9456, 120.7090], customers: ['Jasmine', 'Kim'] },
   { id: 'TRANSFORMER_3', deviceId: 'santol_1', name: 'Transformer 3', coords: [13.9504, 120.7015], customers: ['Joylene', 'Rhein', 'Nioko'] },
   { id: 'TRANSFORMER_4', deviceId: 'santol_2', name: 'Transformer 4', coords: [13.9466, 120.7039], customers: ['Mika', 'Nhezel'] },
 ];
