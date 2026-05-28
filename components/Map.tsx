@@ -50,7 +50,7 @@ export default function Map({ events = [], fullscreen = false }: MapProps) {
   // A device is offline if it has an Active (unresolved) event
   const getSensorOnline = useCallback((deviceId: string): boolean => {
     const deviceEvents = events.filter(e =>
-      e.deviceId?.toLowerCase() === deviceId.toLowerCase()
+      (e.deviceId || (e as any).device_id || '').toLowerCase() === deviceId.toLowerCase()
     );
     return !deviceEvents.some(e => e.status === 'Active');
   }, [events]);
@@ -246,7 +246,7 @@ export default function Map({ events = [], fullscreen = false }: MapProps) {
       el.innerHTML = `
         <div class="location-card">
           <div class="location-title">${tf.name}</div>
-          <div class="location-desc">${isOnline ? '✅ Online' : '⚠️ Outage'}</div>
+          <div class="location-desc">${isOnline ? '✅ Online' : '🔴 Outage'}</div>
         </div>
         <div class="location-pin"></div>
       `;
