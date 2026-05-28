@@ -18,12 +18,12 @@ interface SensorLocation {
   coords: [number, number];
 }
 
-// Balayan sensor locations
+// Balayan sensor locations — static coordinates, real-time status via MQTT
 const SENSOR_LOCATIONS: SensorLocation[] = [
-  { id: 'SAMBAT_1', name: 'SAMBAT Sensor 1', coords: [13.9478889, 120.7096667] },
-  { id: 'SAMBAT_2', name: 'SAMBAT Sensor 2', coords: [13.9503889, 120.7015000] },
-  { id: 'SANTOL_1', name: 'SANTOL Sensor 1', coords: [13.9465833, 120.7039444] },
-  { id: 'SANTOL_2', name: 'SANTOL Sensor 2', coords: [13.9455833, 120.7089999] },
+  { id: 'SAMBAT_1', name: 'SAMBAT Sensor 1', coords: [13.9479, 120.7097] },
+  { id: 'SAMBAT_2', name: 'SAMBAT Sensor 2', coords: [13.9504, 120.7015] },
+  { id: 'SANTOL_1', name: 'SANTOL Sensor 1', coords: [13.9466, 120.7039] },
+  { id: 'SANTOL_2', name: 'SANTOL Sensor 2', coords: [13.9456, 120.7090] },
 ];
 
 const DEFAULT_CENTER: [number, number] = [13.94, 120.73];
