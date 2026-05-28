@@ -6,7 +6,6 @@ import Sidebar from '@/components/Sidebar';
 import MobileNav from '@/components/MobileNav';
 import StatCards from '@/components/StatCards';
 import EventTable from '@/components/EventTable';
-import MapPanel from '@/components/MapPanel';
 import { PowerEvent } from '@/types';
 import DetailPanel from '@/components/DetailPanel';
 import { useDevices } from '@/context/DeviceContext';
@@ -38,14 +37,10 @@ export default function DashboardPage() {
           <main className="flex-1 overflow-y-auto thin-scroll bg-[#0C1119] px-4 sm:px-6 pb-28 md:pb-6 relative">
             <StatCards />
             
-            <div className="flex flex-col lg:flex-row gap-5 sm:gap-6 mt-7">
+            <div className="mt-7">
               <EventTable 
                 events={powerEvents} 
                 onEventClick={handleEventClick} 
-              />
-              <MapPanel 
-                events={powerEvents} 
-                onMarkerClick={handleEventClick} 
               />
             </div>
             
