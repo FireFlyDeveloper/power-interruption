@@ -95,7 +95,7 @@ export function usePushNotifications() {
         body: JSON.stringify({
           endpoint: subData.endpoint,
           keys: subData.keys,
-          userAgent: navigator.userAgent,
+          origin: window.location.origin,
         }),
       });
 
