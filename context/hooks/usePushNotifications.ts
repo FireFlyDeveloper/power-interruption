@@ -108,6 +108,19 @@ export function usePushNotifications() {
       // Extract keys from the subscription data
       const keys = subData.keys || {};
       
+      console.log('[PushNotifications] Subscription keys:', {
+        p256dh_length: keys.p256dh?.length,
+        auth_length: keys.auth?.length
+      });
+      
+      // Validate keys before sending to backend
+      if (!keys.p256dh || keys.p256dh.length < 20) {
+        throw new Error('Invalid subscription: p256dh key is missing or too short');
+      }
+      if (!keys.auth || keys.auth.length < 10) {
+        throw new Error('Invalid subscription: auth key is missing or too short');
+      }
+      
       const res = await fetch(`${API_BASE}/api/notifications/push/subscribe`, {
         method: 'POST',
         headers: {
