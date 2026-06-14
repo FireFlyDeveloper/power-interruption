@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 const PUBLIC_VAPID_KEY = 'BBm5LE5SVwhP0nhzuHbrrTLUmnmvjPBw26JeXAphKHXzzhdWVI2-ibAIx13t0nSjikSgYEsI5iOushNacGDPl3Y';
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://power-interruption-backend-ewp6.onrender.com';
+// Use relative URL to hit Next.js proxy
+const API_BASE = '';
 
 /**
  * Helper: convert a base64 string to a Uint8Array for the applicationServerKey.
@@ -65,15 +66,31 @@ export function usePushNotifications() {
 
     try {
       if (!swRef.current) {
-        throw new Error('Service worker not registered');
+        throw new Error('Service worker not registered - please refresh the page');
       }
 
-      // Request permission if needed
-      const permission = await Notification.requestPermission();
+      // Check current permission first
+      if (Notification.permission === 'denied') {
+        throw new Error('Notification permission was denied. Please enable it in browser settings.');
+      }
+
+      // Request permission if needed (with timeout)
+      let permission: NotificationPermission;
+      if (Notification.permission === 'default') {
+        // Wrap in timeout to prevent hanging
+        const permissionPromise = Notification.requestPermission();
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Permission request timed out')), 10000)
+        );
+        permission = await Promise.race([permissionPromise, timeoutPromise]);
+      } else {
+        permission = Notification.permission;
+      }
+      
       setPermissionState(permission);
 
       if (permission !== 'granted') {
-        throw new Error('Notification permission denied');
+        throw new Error(`Notification permission ${permission}`);
       }
 
       // Subscribe to push
@@ -86,6 +103,9 @@ export function usePushNotifications() {
       const token = localStorage.getItem('token');
       const subData = subscription.toJSON();
 
+      // Extract keys from the subscription data
+      const keys = subData.keys || {};
+      
       const res = await fetch(`${API_BASE}/api/notifications/push/subscribe`, {
         method: 'POST',
         headers: {
@@ -94,7 +114,8 @@ export function usePushNotifications() {
         },
         body: JSON.stringify({
           endpoint: subData.endpoint,
-          keys: subData.keys,
+          p256dh: keys.p256dh,
+          auth: keys.auth,
           origin: window.location.origin,
         }),
       });
