@@ -25,8 +25,6 @@ export default function SettingsPage() {
   const [passwordError, setPasswordError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const [emailAlertsEnabled, setEmailAlertsEnabled] = useState(false);
-  const [loadingEmail, setLoadingEmail] = useState(true);
   const [pushBackendEnabled, setPushBackendEnabled] = useState(false);
   const [loadingPushBackend, setLoadingPushBackend] = useState(true);
 
@@ -40,17 +38,15 @@ export default function SettingsPage() {
     error: pushError,
   } = usePushNotifications();
 
-  // Load email notification preferences from backend
+  // Load notification preferences from backend
   useEffect(() => {
     const loadSettings = async () => {
       try {
         const settings = await notificationService.getSettings();
-        setEmailAlertsEnabled(settings.emailAlerts);
         setPushBackendEnabled(settings.pushEnabled);
       } catch (err) {
         console.error('Failed to load notification settings:', err);
       } finally {
-        setLoadingEmail(false);
         setLoadingPushBackend(false);
       }
     };
@@ -136,37 +132,7 @@ export default function SettingsPage() {
                 </button>
               </div>
             </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-white font-medium">Email Alerts</p>
-                <p className="text-sm text-gray-400">Receive email notifications for power outages</p>
-              </div>
-              <div className="flex items-center gap-3">
-                {loadingEmail && (
-                  <span className="text-sm text-gray-500">Loading...</span>
-                )}
-                <button
-                  onClick={async () => {
-                    const newVal = !emailAlertsEnabled;
-                    setEmailAlertsEnabled(newVal);
-                    try {
-                      await notificationService.updateSettings(newVal);
-                    } catch (err) {
-                      setEmailAlertsEnabled(!newVal);
-                      console.error('Failed to update email settings:', err);
-                    }
-                  }}
-                  disabled={loadingEmail}
-                  className={`w-12 h-6 rounded-full transition-colors ${
-                    emailAlertsEnabled ? 'bg-[#22A06B]' : 'bg-[#556E85]'
-                  } disabled:opacity-50`}
-                >
-                  <div className={`w-5 h-5 rounded-full bg-white transition-transform ${
-                    emailAlertsEnabled ? 'translate-x-6' : 'translate-x-0.5'
-                  }`}></div>
-                </button>
-              </div>
-            </div>
+
           </div>
         </div>
 

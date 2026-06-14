@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 import { useAppSettings } from './AppSettingsContext';
+import { useRealtime } from './hooks/useRealtime';
 import { Device, PowerEvent } from '@/types/index';
 import { deviceService } from './services/deviceService';
 import { eventService, DashboardStats } from './services/eventService';
@@ -85,7 +86,7 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
     }
   }, [authLoading, isAuthenticated, fetchDevices, fetchEvents, fetchStats]);
 
-  // Auto-refresh polling
+  // Auto-refresh polling (as fallback)
   const { settings } = useAppSettings();
   useEffect(() => {
     if (!isAuthenticated || !settings.autoRefresh) return;
@@ -97,6 +98,44 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
     }, ms);
     return () => clearInterval(interval);
   }, [isAuthenticated, settings.autoRefresh, settings.refreshInterval, fetchDevices, fetchEvents, fetchStats, eventPage]);
+
+  // Real-time updates via SSE (primary)
+  const handleDeviceUpdate = useCallback((deviceData: any) => {
+    setDevices(prev => {
+      const index = prev.findIndex(d => d.deviceId === deviceData.deviceId);
+      if (index >= 0) {
+        // Update existing device
+        const updated = [...prev];
+        updated[index] = { ...updated[index], ...deviceData };
+        return updated;
+      }
+      return prev;
+    });
+  }, []);
+
+  const handleNewEvent = useCallback((eventData: any) => {
+    setPowerEvents(prev => {
+      // Avoid duplicates
+      if (prev.some(e => e.id === eventData.id)) return prev;
+      return [eventData as PowerEvent, ...prev];
+    });
+    // Refresh stats when new event arrives
+    fetchStats();
+  }, [fetchStats]);
+
+  const handleEventResolved = useCallback((eventId: string) => {
+    setPowerEvents(prev =>
+      prev.map(e => e.id === eventId ? { ...e, status: 'Resolved' } : e)
+    );
+    // Refresh stats when event is resolved
+    fetchStats();
+  }, [fetchStats]);
+
+  useRealtime({
+    onDeviceUpdate: handleDeviceUpdate,
+    onNewEvent: handleNewEvent,
+    onEventResolved: handleEventResolved,
+  });
 
   const addDevice = useCallback(async (deviceData: Omit<Device, 'id' | 'lastSeen'>) => {
     try {

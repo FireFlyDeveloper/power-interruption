@@ -16,16 +16,65 @@ interface SensorLocation {
   id: string;        // DOM element ID, e.g. "TRANSFORMER_1"
   deviceId: string;  // Backend device_id, e.g. "sambat_1"
   name: string;
+  number: number;    // Transformer number for display
   coords: [number, number];
+  barangay: string;
+  sitio: string;
+  municipality: string;
+  province: string;
   customers: string[];
 }
 
-// Transformers with mock customer data
+// Transformers with formal customer names and complete location details
 const TRANSFORMERS: SensorLocation[] = [
-  { id: 'TRANSFORMER_1', deviceId: 'sambat_1', name: 'Sitio Sambat Transformer 1', coords: [13.9479, 120.7097], customers: ['Rhomer', 'Robe', 'Julie Anne'] },
-  { id: 'TRANSFORMER_2', deviceId: 'sambat_2', name: 'Sitio Sambat Transformer 2', coords: [13.9456, 120.7090], customers: ['Jasmine', 'Kim'] },
-  { id: 'TRANSFORMER_3', deviceId: 'santol_1', name: 'Transformer 3', coords: [13.9504, 120.7015], customers: ['Joylene', 'Rhein', 'Nioko'] },
-  { id: 'TRANSFORMER_4', deviceId: 'santol_2', name: 'Transformer 4', coords: [13.9466, 120.7039], customers: ['Mika', 'Nhezel'] },
+  {
+    id: 'TRANSFORMER_1',
+    deviceId: 'sambat_1',
+    name: 'Sitio Sambat Transformer 1',
+    number: 1,
+    coords: [13.9479, 120.7097],
+    barangay: 'Sambat',
+    sitio: 'Puntod',
+    municipality: 'Balayan',
+    province: 'Batangas',
+    customers: ['Rhomer Dela Cruz', 'Robe Santos', 'Julie Anne Reyes']
+  },
+  {
+    id: 'TRANSFORMER_2',
+    deviceId: 'sambat_2',
+    name: 'Sitio Sambat Transformer 2',
+    number: 2,
+    coords: [13.9456, 120.7090],
+    barangay: 'Sambat',
+    sitio: 'Lawin',
+    municipality: 'Balayan',
+    province: 'Batangas',
+    customers: ['Jasmine Garcia', 'Kim Mendoza']
+  },
+  {
+    id: 'TRANSFORMER_3',
+    deviceId: 'santol_1',
+    name: 'Transformer 3',
+    number: 3,
+    coords: [13.9504, 120.7015],
+    barangay: 'Santol',
+    sitio: 'Puntod',
+    municipality: 'Balayan',
+    province: 'Batangas',
+    customers: ['Joylene Fernandez', 'Rhein Bautista', 'Nioko Villanueva']
+  },
+  {
+    id: 'TRANSFORMER_4',
+    deviceId: 'santol_2',
+    name: 'Transformer 4',
+    number: 4,
+    coords: [13.9466, 120.7039],
+    barangay: 'Santol',
+    sitio: 'Puntod',
+    municipality: 'Balayan',
+    province: 'Batangas',
+    customers: ['Mika Torres', 'Nhezel Ramos']
+  },
 ];
 
 // Lookup deviceId -> Transformer info
@@ -285,10 +334,32 @@ export default function Map({ events = [], fullscreen = false }: MapProps) {
           <div className="flex items-center gap-3 mb-4">
             <div className={`w-3 h-3 rounded-full ${getSensorOnline(selectedTransformer.deviceId) ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.7)]' : 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.7)] animate-pulse'}`} />
             <div>
-              <h3 className="text-white font-bold text-lg">{selectedTransformer.name}</h3>
+              <h3 className="text-white font-bold text-lg">Transformer {selectedTransformer.number}</h3>
               <span className={`text-xs font-medium ${getSensorOnline(selectedTransformer.deviceId) ? 'text-green-400' : 'text-red-400'}`}>
                 {getSensorOnline(selectedTransformer.deviceId) ? '● Online' : '● Outage Detected'}
               </span>
+            </div>
+          </div>
+
+          {/* Complete Location Details */}
+          <div className="bg-[#1F314F]/50 rounded-lg p-3 mb-3 border border-[#273953]">
+            <div className="text-sm text-gray-300 space-y-1">
+              <div className="flex justify-between">
+                <span className="text-gray-500">Barangay:</span>
+                <span className="text-gray-200">{selectedTransformer.barangay}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Sitio:</span>
+                <span className="text-gray-200">{selectedTransformer.sitio}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Municipality:</span>
+                <span className="text-gray-200">{selectedTransformer.municipality}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Province:</span>
+                <span className="text-gray-200">{selectedTransformer.province}</span>
+              </div>
             </div>
           </div>
 
