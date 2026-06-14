@@ -54,11 +54,14 @@ export default function SettingsPage() {
   }, []);
 
   const handlePushToggle = async () => {
+    console.log('[Settings] Toggle clicked. Current state:', { pushBackendEnabled, pushSubscribed, permissionState });
     const currentlyEnabled = pushBackendEnabled;
 
     if (!currentlyEnabled) {
       // Enabling — subscribe browser first, then update backend
+      console.log('[Settings] Calling pushSubscribe...');
       const subResult = await pushSubscribe();
+      console.log('[Settings] pushSubscribe result:', subResult);
       if (!subResult) return;
 
       try {

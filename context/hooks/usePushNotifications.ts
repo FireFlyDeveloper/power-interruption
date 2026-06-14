@@ -61,10 +61,12 @@ export function usePushNotifications() {
   }, []);
 
   const subscribe = useCallback(async (): Promise<boolean> => {
+    console.log('[PushNotifications] Subscribe called');
     setLoading(true);
     setError(null);
 
     try {
+      console.log('[PushNotifications] Checking SW registration:', swRef.current ? 'registered' : 'not registered');
       if (!swRef.current) {
         throw new Error('Service worker not registered - please refresh the page');
       }
