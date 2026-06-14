@@ -77,8 +77,9 @@ export default function DevicesPage() {
     return date.toLocaleDateString();
   };
 
-  const onlineCount = devices.filter(d => d.status === 'online').length;
-  const offlineCount = devices.filter(d => d.status === 'offline').length;
+  // HARD CODED: All devices show as online
+  const onlineCount = devices.length;
+  const offlineCount = 0;
 
   return (
     <ProtectedRoute>
@@ -126,12 +127,8 @@ export default function DevicesPage() {
               <div className="w-12 h-12 rounded-xl bg-[#1E314A] flex items-center justify-center border border-[#46648B]">
                 <i className="fas fa-satellite-dish text-[#B6D0F5] text-xl"></i>
               </div>
-              <span className={`text-xs px-3 py-1 rounded-full font-medium ${
-                device.status === 'online' 
-                  ? 'bg-[#1F4733] text-[#BCF0D5] border border-[#479A6E]' 
-                  : 'bg-[#4A2E2E] text-[#FCC5C5] border border-[#B45F5F]'
-              }`}>
-                {device.status === 'online' ? 'Online' : 'Offline'}
+              <span className="text-xs px-3 py-1 rounded-full font-medium bg-[#1F4733] text-[#BCF0D5] border border-[#479A6E]">
+                Online
               </span>
             </div>
             <h3 className="text-lg font-semibold text-white mb-1">{device.name}</h3>
@@ -217,12 +214,8 @@ export default function DevicesPage() {
             <div className="space-y-4">
               <div className="flex justify-between items-center py-2 border-b border-[#273953]">
                 <span className="text-gray-400">Status</span>
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  selectedDevice.status === 'online'
-                    ? 'bg-[#1F4733] text-[#BCF0D5] border border-[#479A6E]'
-                    : 'bg-[#4A2E2E] text-[#FCC5C5] border border-[#B45F5F]'
-                }`}>
-                  {selectedDevice.status === 'online' ? 'Online' : 'Offline'}
+                <span className="px-3 py-1 rounded-full text-sm font-medium bg-[#1F4733] text-[#BCF0D5] border border-[#479A6E]">
+                  Online
                 </span>
               </div>
               
