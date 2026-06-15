@@ -154,17 +154,7 @@ export default function DetailPanel({ event, isOpen, onClose }: DetailPanelProps
             </ul>
           </div>
 
-          <div className="bg-[#122336] p-4 rounded-xl border border-[#3866A0]">
-            <span className="text-base text-gray-300 block mb-2 font-medium">Notes</span>
-            <p className="text-gray-200 text-base leading-relaxed">
-              {event.notes || 'No additional notes available.'}
-            </p>
-            {event.affectedCustomers && (
-              <p className="text-gray-400 text-sm mt-2">
-                {event.affectedCustomers.toLocaleString()} customers affected
-              </p>
-            )}
-          </div>
+
         </div>
       </div>
     </>
