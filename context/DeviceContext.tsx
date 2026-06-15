@@ -52,7 +52,13 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
   const fetchEvents = useCallback(async (page = 1) => {
     try {
       const data = await eventService.getAll(page, 50);
-      setPowerEvents(data.events);
+      // Map backend fields to frontend fields
+      const mappedEvents = data.events.map((event: any) => ({
+        ...event,
+        start: event.start_time ? new Date(event.start_time).toLocaleString() : 'N/A',
+        duration: event.duration ? formatDuration(event.duration) : '—',
+      }));
+      setPowerEvents(mappedEvents);
       setEventPage(data.pagination.page);
       setEventTotal(data.pagination.total);
       setEventTotalPages(data.pagination.totalPages);
@@ -60,6 +66,17 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
       console.error(e);
     }
   }, []);
+
+  // Helper to format duration from seconds
+  const formatDuration = (seconds: number): string => {
+    if (!seconds || seconds <= 0) return '—';
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    if (hrs > 0) {
+      return `${hrs}h ${mins}m`;
+    }
+    return `${mins}m`;
+  };
 
   const goToEventPage = useCallback(async (page: number) => {
     if (page < 1 || page > eventTotalPages) return;
@@ -117,7 +134,13 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
     setPowerEvents(prev => {
       // Avoid duplicates
       if (prev.some(e => e.id === eventData.id)) return prev;
-      return [eventData as PowerEvent, ...prev];
+      // Map backend fields to frontend fields
+      const mappedEvent = {
+        ...eventData,
+        start: eventData.start_time ? new Date(eventData.start_time).toLocaleString() : 'N/A',
+        duration: eventData.duration ? formatDuration(eventData.duration) : '—',
+      };
+      return [mappedEvent as PowerEvent, ...prev];
     });
     // Refresh stats when new event arrives
     fetchStats();

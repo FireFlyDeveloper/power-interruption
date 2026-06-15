@@ -251,7 +251,7 @@ export default function ReportsPage() {
             {status === 'success' && report && (
               <div className="space-y-6">
                 {/* ── KPI Cards ── */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div className="bg-[#141C28] border border-[#273953] rounded-2xl p-4">
                     <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Total Events</p>
                     <p className="text-2xl font-bold text-white">{report.summary.totalEvents}</p>
@@ -264,46 +264,9 @@ export default function ReportsPage() {
                     <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Resolved</p>
                     <p className="text-2xl font-bold text-[#22C55E]">{report.summary.resolvedCount}</p>
                   </div>
-                  <div className="bg-[#141C28] border border-[#273953] rounded-2xl p-4">
-                    <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Critical</p>
-                    <p className="text-2xl font-bold text-red-400">{report.summary.criticalCount}</p>
-                  </div>
-                  <div className="bg-[#141C28] border border-[#273953] rounded-2xl p-4">
-                    <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Avg Duration</p>
-                    <p className="text-2xl font-bold text-white">{formatDuration(report.summary.avgDurationSeconds)}</p>
-                  </div>
-                  <div className="bg-[#141C28] border border-[#273953] rounded-2xl p-4">
-                    <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Affected Customers</p>
-                    <p className="text-2xl font-bold text-white">{report.summary.totalAffectedCustomers.toLocaleString()}</p>
-                  </div>
                 </div>
 
-                {/* ── Period-over-Period Comparison ── */}
-                <div className="bg-[#141C28] border border-[#273953] rounded-2xl p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-white">Period Comparison</h3>
-                    <span className="text-xs text-gray-500">
-                      vs {report.periodComparison.previousPeriod.start} — {report.periodComparison.previousPeriod.end}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-gray-400">Events Change</p>
-                      <div className="flex items-baseline gap-2 mt-1">
-                        <span className="text-xl font-bold text-white">{report.summary.totalEvents}</span>
-                        <span className="text-sm text-gray-500">(prev: {report.periodComparison.previousTotal})</span>
-                        <TrendBadge value={report.periodComparison.eventChange} />
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-400">Critical Events Change</p>
-                      <div className="flex items-baseline gap-2 mt-1">
-                        <span className="text-xl font-bold text-white">{report.summary.criticalCount}</span>
-                        <TrendBadge value={report.periodComparison.criticalChange} />
-                      </div>
-                    </div>
-                  </div>
-                </div>
+
 
                 {/* ── Two-column: Daily Breakdown + Severity Distribution ── */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

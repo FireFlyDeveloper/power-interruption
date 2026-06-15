@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useCallback } from 'react';
 import { PowerEvent } from '@/types';
 import { useDevices } from '@/context/DeviceContext';
 
@@ -37,50 +37,6 @@ const getSeverityClass = (severity: string) => {
 
 export default function EventTable({ events, onEventClick }: EventTableProps) {
   const { eventPage, eventTotal, eventTotalPages, goToEventPage } = useDevices();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterStatus, setFilterStatus] = useState<string>('All');
-  const [filterSeverity, setFilterSeverity] = useState<string>('All');
-  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
-  const [showSeverityDropdown, setShowSeverityDropdown] = useState(false);
-
-  // Filter events based on search and filters
-  const filteredEvents = useMemo(() => {
-    return events.filter(event => {
-      // Search filter
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        const matchesSearch = 
-          event.location.toLowerCase().includes(query);
-        if (!matchesSearch) return false;
-      }
-      
-      // Status filter
-      if (filterStatus !== 'All' && event.status !== filterStatus) {
-        return false;
-      }
-      
-      // Severity filter
-      if (filterSeverity !== 'All' && event.severity !== filterSeverity) {
-        return false;
-      }
-      
-      return true;
-    });
-  }, [events, searchQuery, filterStatus, filterSeverity]);
-
-  // Close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (!(e.target as Element).closest('.status-dropdown')) {
-        setShowStatusDropdown(false);
-      }
-      if (!(e.target as Element).closest('.severity-dropdown')) {
-        setShowSeverityDropdown(false);
-      }
-    };
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, []);
 
   const handleEventClick = useCallback((event: PowerEvent) => {
     onEventClick(event);
@@ -88,91 +44,9 @@ export default function EventTable({ events, onEventClick }: EventTableProps) {
 
   return (
     <div className="flex-1 bg-[#141C28] border border-[#273953] rounded-2xl overflow-hidden flex flex-col min-h-100">
-      {/* Toolbar */}
-      <div className="p-4 border-b border-[#2F4565] flex flex-wrap items-center gap-3 bg-[#101E30]">
-        <div className="flex items-center bg-[#1F314F] rounded-full px-4 py-2.5 flex-1 min-w-45 border border-[#3E5D88]">
-          <i className="fas fa-search text-gray-400 mr-2 text-base"></i>
-          <input
-            type="text"
-            placeholder="Search location..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-transparent border-0 text-base text-white placeholder-gray-500 focus:outline-none"
-          />
-        </div>
-        <div className="flex gap-2 relative">
-          {/* Status Filter */}
-          <div className="relative status-dropdown">
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowStatusDropdown(!showStatusDropdown);
-                setShowSeverityDropdown(false);
-              }}
-              className="bg-[#1F314F] text-sm px-4 py-2.5 rounded-full flex items-center gap-2 border border-[#3E5D88] font-medium cursor-pointer hover:bg-[#2A3E5A] transition-colors"
-            >
-              <span>{filterStatus === 'All' ? 'Status' : filterStatus}</span>
-              <i className="fas fa-chevron-down text-xs"></i>
-            </button>
-            {showStatusDropdown && (
-              <div className="absolute top-full mt-2 left-0 bg-[#1F314F] border border-[#3E5D88] rounded-lg shadow-xl z-10 min-w-32 overflow-hidden">
-                {['All', 'Active', 'Investigating', 'Resolved'].map(status => (
-                  <button
-                    key={status}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setFilterStatus(status);
-                      setShowStatusDropdown(false);
-                    }}
-                    className={`w-full px-4 py-2 text-left text-sm hover:bg-[#2A3E5A] transition-colors ${
-                      filterStatus === status ? 'bg-[#2A3E5A] text-white' : 'text-gray-300'
-                    }`}
-                  >
-                    {status}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Severity Filter */}
-          <div className="relative severity-dropdown">
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowSeverityDropdown(!showSeverityDropdown);
-                setShowStatusDropdown(false);
-              }}
-              className="bg-[#1F314F] text-sm px-4 py-2.5 rounded-full flex items-center gap-2 border border-[#3E5D88] font-medium cursor-pointer hover:bg-[#2A3E5A] transition-colors hidden sm:flex"
-            >
-              <span>{filterSeverity === 'All' ? 'Severity' : filterSeverity}</span>
-              <i className="fas fa-chevron-down text-xs"></i>
-            </button>
-            {showSeverityDropdown && (
-              <div className="absolute top-full mt-2 left-0 bg-[#1F314F] border border-[#3E5D88] rounded-lg shadow-xl z-10 min-w-32 overflow-hidden">
-                {['All', 'Critical', 'Medium', 'Low'].map(severity => (
-                  <button
-                    key={severity}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setFilterSeverity(severity);
-                      setShowSeverityDropdown(false);
-                    }}
-                    className={`w-full px-4 py-2 text-left text-sm hover:bg-[#2A3E5A] transition-colors ${
-                      filterSeverity === severity ? 'bg-[#2A3E5A] text-white' : 'text-gray-300'
-                    }`}
-                  >
-                    {severity}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <button className="bg-[#1F314F] text-sm px-4 py-2.5 rounded-full flex items-center gap-2 border border-[#3E5D88] cursor-pointer hover:bg-[#2A3E5A] transition-colors">
-            <i className="fas fa-calendar-alt text-base"></i>
-          </button>
-        </div>
+      {/* Header - simplified without filters */}
+      <div className="p-4 border-b border-[#2F4565] bg-[#101E30]">
+        <h3 className="text-lg font-semibold text-white">Power Events</h3>
       </div>
 
       {/* Table */}
@@ -187,14 +61,14 @@ export default function EventTable({ events, onEventClick }: EventTableProps) {
             </tr>
           </thead>
           <tbody className="divide-y divide-[#2D4567]">
-            {filteredEvents.length === 0 ? (
+            {events.length === 0 ? (
               <tr>
                 <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
                   No events found
                 </td>
               </tr>
             ) : (
-              filteredEvents.map((event) => (
+              events.map((event) => (
                 <tr
                   key={event.id}
                   onClick={() => handleEventClick(event)}
