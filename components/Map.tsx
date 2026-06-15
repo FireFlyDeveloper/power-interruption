@@ -54,7 +54,7 @@ const TRANSFORMERS: SensorLocation[] = [
   {
     id: 'TRANSFORMER_3',
     deviceId: 'santol_1',
-    name: 'Transformer 3',
+    name: 'Sitio Santol Transformer 3',
     number: 3,
     coords: [13.9504, 120.7015],
     barangay: 'Santol',
@@ -66,7 +66,7 @@ const TRANSFORMERS: SensorLocation[] = [
   {
     id: 'TRANSFORMER_4',
     deviceId: 'santol_2',
-    name: 'Transformer 4',
+    name: 'Sitio Santol Transformer 4',
     number: 4,
     coords: [13.9466, 120.7039],
     barangay: 'Santol',

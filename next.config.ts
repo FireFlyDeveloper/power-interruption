@@ -41,6 +41,10 @@ const nextConfig: NextConfig = {
         destination: `http://localhost:3001/sse/:path*`,
       },
       {
+        source: "/api/sse/:path*",
+        destination: `http://localhost:3001/sse/:path*`,
+      },
+      {
         source: "/api/power-interruption/:path*",
         destination: `http://localhost:3001/api/v1/:path*`,
       },

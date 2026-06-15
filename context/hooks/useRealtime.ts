@@ -41,7 +41,8 @@ export function useRealtime(options: UseRealtimeOptions = {}) {
       console.log('[SSE] Connecting to real-time updates...');
 
       // Create EventSource with auth header via URL param (EventSource doesn't support headers)
-      const es = new EventSource(`/sse/updates?token=${encodeURIComponent(token)}`);
+      // Connect directly to backend to avoid Next.js proxy buffering issues
+      const es = new EventSource(`http://localhost:3001/sse/updates?token=${encodeURIComponent(token)}`);
       eventSourceRef.current = es;
 
       es.onopen = () => {
