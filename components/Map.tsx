@@ -58,7 +58,7 @@ const TRANSFORMERS: SensorLocation[] = [
     number: 3,
     coords: [13.9504, 120.7015],
     barangay: 'Santol',
-    sitio: 'Puntod',
+    sitio: 'Caloocan',
     municipality: 'Balayan',
     province: 'Batangas',
     customers: ['Joylene Fernandez', 'Rhein Bautista', 'Nioko Villanueva']
@@ -70,7 +70,7 @@ const TRANSFORMERS: SensorLocation[] = [
     number: 4,
     coords: [13.9466, 120.7039],
     barangay: 'Santol',
-    sitio: 'Puntod',
+    sitio: 'Mulawin',
     municipality: 'Balayan',
     province: 'Batangas',
     customers: ['Mika Torres', 'Nhezel Ramos']
