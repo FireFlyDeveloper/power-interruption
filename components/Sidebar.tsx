@@ -44,7 +44,6 @@ export default function Sidebar({ pathname }: SidebarProps) {
           </Link>
         ))}
       </nav>
-      <div className="mt-auto mb-6 text-gray-600 text-xs font-medium">v.2</div>
     </aside>
   );
 }
